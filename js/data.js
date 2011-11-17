@@ -1,4 +1,4 @@
-// -- data model ---------------------------------------------------------------
+//-- data model ----------------------------------------------------------------
 
 var columnList = [
   'timestamp',
@@ -50,7 +50,7 @@ MelaCase.prototype.addEntry = function(entry) {
   this[propertyName] = value;
 }
 
-// -- data loading -------------------------------------------------------------
+//-- data loading --------------------------------------------------------------
 
 var loadData_callback;
 
