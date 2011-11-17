@@ -16,6 +16,8 @@ Clusters.prototype.showDetails = function(caseData) {
     var value = Number(field.text());
     if (isNaN(value)) value = 0;
     
+    console.log(field.attr("data-column"));
+    
     field.html(
       "<div class='value'>"+value+"</div>" +
       "<div class='bar'>" + 
