@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<head>
+	<meta charset="UTF-8"/>
+	<title>Survey visualization</title>
+	<script type="text/javascript" src="js/d3/d3.js"></script>
+        <script type="text/javascript" src="js/functions.js"></script>
+        <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+        <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+        <link rel="stylesheet" href="info.css" type="text/css" media="screen"/>
+        <script type="text/javascript">
+
+            $(document).ready(function() {
+            $("#accordion").accordion();
+            });
+
+            var list = null;
+
+            function go() {
+                //define map
+                var latlng = new google.maps.LatLng(22.593, 1.757);
+                var myOptions = {
+                  zoom: 2,
+                  center: latlng,
+                  mapTypeId: google.maps.MapTypeId.ROADMAP
+                };
+                map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+
+                jsonGetCellEntries("0AlbpHfWQ4qzxdHRRaHUwREgxTlJUR0d6V3QwbENnUGc", '1', 'jsonProcessCells_cb');
+            }
+
+            function jsonProcessList_cb(json) {
+                jsonGetCellEntries("0AlbpHfWQ4qzxdHRRaHUwREgxTlJUR0d6V3QwbENnUGc", '1', 'jsonProcessCells_cb');
+            }
+
+            function jsonProcessCells_cb(json) {
+                var data = jsonParseCellEntries(json, list);
+                if(data == null)
+                    document.write("???");
+                //map
+                produceMarkers(map, data);
+                //graph
+                var p = packGraphData(data);
+                createRow(0, p, 'row1');
+                createRow(1, p, 'row2');
+                createRow(2, p, 'row3');
+                //content
+                createContentList(data, 'content');
+            }
+            
+        </script>
+</head>
+<body onload="go()">
+
+    <div>
+        <table width="100%">
+            <tbody>
+                <tr>
+                    <td width="200">
+                        <img src="img/mela_logo.png"/>
+                    </td>
+                    <td class="WP5" width="80%">
+                        WP5: Desk Research Tool
+                    </td>
+                    <td width="200">
+                        <img src="img/ciid_logo.png"/>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="accordion">
+
+        <h3><a href="#">Survey Map</a></h3>
+        <div>
+            <div class="mapwrap">
+                <div id="map_canvas" class="map"></div>
+                <div id="list-data"></div>
+            </div>
+        </div>
+
+        <h3><a href="#">Statistics</a></h3>
+        <div>
+            <div class="row" id="row1"></div>
+            <div class="row" id="row2"></div>
+            <div class="row" id="row3"></div>
+        </div>
+
+        <h3><a href="#">Content List</a></h3>
+        <div>
+            <div class="listcontent" id="content"></div>
+        </div>
+
+        <h3><a href="#">Input Form</a></h3>
+        <div style="text-align:center;">
+            <iframe src="https://spreadsheets.google.com/embeddedform?formkey=dHRRaHUwREgxTlJUR0d6V3QwbENnUGc6MA" width="860" height="800" frameborder="0" marginheight="0" marginwidth="0">Loading...</iframe>
+        </div>
+
+    </div>
+    
+</body>
