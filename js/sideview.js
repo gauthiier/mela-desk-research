@@ -1,6 +1,6 @@
-function showDetails (caseData) {
+function showDetails(caseData) {
   var details = $($("#caseDetails").render(caseData));
-  $("#clusters .sidebar").html(details);
+  $("#sideview").html(details);
 
   //adds bar representing the value next to the value number
   details.find(".number").each(function() {

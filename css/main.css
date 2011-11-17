@@ -37,10 +37,10 @@ h2 {
 
 #clusters {
 	height:100%;
+	float: left;	
 }
 
 #clusters .content {
-	float: left;
 	height: 100%;
 }
 
@@ -55,7 +55,7 @@ h2 {
 	margin: 100px 0 0 50px;
 }
 
-.sidebar {
+#sideview {
 	xposition: absolute;
 	xright: 0;
 	float: right;
@@ -69,11 +69,11 @@ h2 {
 	text-overflow: ellipsis;
 }
 
-.sidebar h2 {
+#sideview h2 {
 	margin: 0.25em 0;
 }
 
-.sidebar .caseDetails {
+#sideview .caseDetails {
 	padding: 1em;	
 }
 

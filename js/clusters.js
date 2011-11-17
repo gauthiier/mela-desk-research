@@ -4,7 +4,7 @@
 
 function Clusters(casesList) {
   this.casesList = casesList;
-  this.showDetails(casesList[0]);
+  showDetails(casesList[0]);
   
   var self = this;
   $(window).bind('resize', function(e) {
@@ -52,8 +52,6 @@ Clusters.prototype.buildGUI = function() {
   $("#clusters_oy").bind("change", function(e) {
      self.updateGraph();  
    })
-  
-  
   
   
   this.updateGraph();
@@ -161,44 +159,7 @@ Clusters.prototype.updateGraph = function() {
 }
 
 Clusters.prototype.resize = function() {
-  var sidebarW = $("#clusters .sidebar").width();
+  var sideviewW = $("#sideview").width();
   var windowW = $(window).width();
-  $("#clusters .content").css("width", (windowW - sidebarW - 1) + "px");
-}
-
-Clusters.prototype.showDetails = function(caseData) {
-  var details = $($("#caseDetails").render(caseData));
-  $("#clusters .sidebar").html(details);
-    
-  //adds bar representing the value next to the value number
-  details.find(".number").each(function() {
-    var field = $(this);
-    var value = Number(field.text());
-    if (isNaN(value)) value = 0;
-    
-    var columnName = field.attr("data-column");
-    var labels = columnLabels[columnName];
-    
-    field.html(
-      "<div class='barContainer'>" +
-      "<div class='low'>"+labels[0]+"</div>" +
-      "<div class='hi'>"+labels[1]+"</div>" +
-      "<div class='value' style='left:" + (value * 20 + 1) + "%'>"+value+"</div>" +
-      "<div class='bar'>" + 
-      "<div class='barvalue' style='width:" + (value * 20) + "%'></div>" +
-      "</div>"+
-      "</div>"      
-    )
-  })
-  
-  //converts text links to html <a href>
-  details.find(".links").each(function() {
-    var field = $(this);
-    var links = field.text().split(/[ \n]/);
-    var html = "";
-    $(links).each(function() {
-      html += "<a href='" + this + "'>" + this + "</a>\n";
-    });
-    field.html(html);
-  });  
+  //$("#clusters").css("width", (windowW - sideviewW - 10) + "px");
 }
