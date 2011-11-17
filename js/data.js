@@ -1,42 +1,41 @@
 //-- data model ----------------------------------------------------------------
 
 var columnList = [
-  'timestamp',
-  'nameoftheinstitutionorganisation', 
-  'country', 
-  'city', 
-  'typeofinstitutionorganisation', 
-  'links', 
-  'name', 
-  'year', 
-  'namecontactofcuratororganizer', 
-  'links_2', 
-  'description',
-  'focusoftechnology', 
-  'targetgroup', 
-  'whyisitofinterest', 
-  'impact-userperspective', 
-  'impact-institutionorganisationperspective', 
-  'audienceinvolvment', 
-  'audienceengagement',
-  'audienceperception', 
-  'exhibitionelements', 
-  'technologymetaphor', 
-  'technologycontext', 
-  'identityconstruction', 
-  'representation', 
-  'historicalperspective', 
-  'stance', 
-  'multinationalism',
-  'affiliation'
+  'timestamp', "Time stamp",
+  'nameoftheinstitutionorganisation', "Institution",
+  'country', "Country",
+  'city', "City",
+  'typeofinstitutionorganisation', "Type of institution",
+  'links', "Links",
+  'name', "Name",
+  'year', "Year",
+  'namecontactofcuratororganizer', "Curator",
+  'links_2', "Links 2",
+  'description', "Description",
+  'focusoftechnology', "Focus of technology",
+  'targetgroup', "Target group",
+  'whyisitofinterest', "Why is it of interest?",
+  'impact-userperspective', "User perspective", 
+  'impact-institutionorganisationperspective', "Institution perspective",
+  'audienceinvolvment', "Audience involvment",
+  'audienceengagement', "Audience engagement",
+  'audienceperception', "Audience percpetion",
+  'exhibitionelements', "Exhibition elements",
+  'technologymetaphor', "Technology metaphor",
+  'technologycontext', "Technology context",
+  'identityconstruction', "Identity construction",
+  'representation', "Representation",
+  'historicalperspective', "Historical perspective",
+  'stance', "Stance",
+  'multinationalism', "Multinationalism",
+  'affiliation', "Affiliation"
 ];
-            
-
 
 //single row of data describing single case in Mela desk research
 function MelaCase() {
   //initialize all fields with empty values
-  for(var i in columnList) {
+  //each column has name and title so we have to skip index by 2 each time
+  for(var i=0; i<columnList.length; i+=2) {
     var propertyName = columnList[i];
     this[propertyName] = "";
   }  
@@ -44,7 +43,7 @@ function MelaCase() {
 
 MelaCase.prototype.addEntry = function(entry) {
   var col = Number(entry.gs$cell.col) - 1;
-  var propertyName = columnList[col];
+  var propertyName = columnList[col*2];
   var value = entry.content.$t;
   if (!isNaN(value)) value = Number(value);
   this[propertyName] = value;
