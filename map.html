@@ -13,76 +13,76 @@
   <title>CIID MELA Survey visualization</title>
 </head>
 <body>
-
-  <script id="caseDetails" type="text/x-jquery-tmpl">
-  	<div class="caseDetails">
-  		<h2>{{=name}}</h2>
-  		<dl>
-  		  <dt>Time stamp</dt>
-        <dd>{{=timestamp}}</dd>
-        <dt>Institution</dt>
-        <dd>{{=nameoftheinstitutionorganisation}}</dd>
-        <dt>Country</dt>
-        <dd>{{=country}}</dd>
-        <dt>City</dt>
-        <dd>{{=city}}</dd>
-        <dt>Type of institution</dt>
-        <dd>{{=typeofinstitutionorganisation}}</dd>
-        <dt>Links</dt>
-        <dd class="links">{{=links}}</dd>
-        <dt>Name</dt>
-        <dd>{{=name}}</dd>
-        <dt>Year</dt>
-        <dd>{{=year}}</dd>
-        <dt>Curator</dt>
-        <dd>{{=namecontactofcuratororganizer}}</dd>
-        <dt>Links 2</dt>
-        <dd class="links">{{=links_2}}</dd>
-        <dt>Description</dt>
-        <dd class="text">{{=description}}</dd>
-        <dt>Focus of technology</dt>
-        <dd>{{=focusoftechnology}}</dd>
-        <dt>Target group</dt>
-        <dd>{{=targetgroup}}</dd>
-        <dt>Why is it of interest?</dt>
-        <dd class="text">{{=whyisitofinterest}}</dd>
-        <dt>User perspective</dt>
-        <dd>{{=impactuserperspective}}</dd>
-        <dt>Institution perspective</dt>
-        <dd>{{=impactinstitutionorganisationperspective}}</dd>
-        <dt>Audience involvment</dt>
-        <dd class="number" data-column="audienceinvolvment">{{=audienceinvolvment}}</dd>
-        <dt>Audience engagement</dt>
-        <dd class="number" data-column="audienceengagement">{{=audienceengagement}}</dd>
-        <dt>Audience percpetion</dt>
-        <dd class="number" data-column="audienceperception">{{=audienceperception}}</dd>
-        <dt>Exhibition elements</dt>
-        <dd class="number" data-column="exhibitionelements">{{=exhibitionelements}}</dd>
-        <dt>Technology metaphor</dt>
-        <dd class="number" data-column="technologymetaphor">{{=technologymetaphor}}</dd>
-        <dt>Technology context</dt>
-        <dd class="number" data-column="technologycontext">{{=technologycontext}}</dd>
-        <dt>Identity construction</dt>
-        <dd class="number" data-column="identityconstruction">{{=identityconstruction}}</dd>
-        <dt>Representation</dt>
-        <dd class="number" data-column="representation">{{=representation}}</dd>
-        <dt>Historical perspective</dt>
-        <dd class="number" data-column="historicalperspective">{{=historicalperspective}}</dd>
-        <dt>Stance</dt>
-        <dd class="number" data-column="stance">{{=stance}}</dd>
-        <dt>Multinationalism</dt>
-        <dd class="number" data-column="multinationalism">{{=multinationalism}}</dd>
-        <dt>Affiliation</dt>
-        <dd>{{=affiliation}}</dd>
-      </dl>
-  	</div>
-  </script>
-
   <div id="clusters">
     <div id="mapcontent" class="content">
     </div>
-    <div class="sidebar">
-    </div>
+  </div>
+  <div id="sideview">
   </div>
 </body>
+
+<script id="caseDetails" type="text/x-jquery-tmpl">
+	<div class="caseDetails">
+		<h2>{{=name}}</h2>
+		<dl>
+		  <dt>Time stamp</dt>
+      <dd>{{=timestamp}}</dd>
+      <dt>Institution</dt>
+      <dd>{{=nameoftheinstitutionorganisation}}</dd>
+      <dt>Country</dt>
+      <dd>{{=country}}</dd>
+      <dt>City</dt>
+      <dd>{{=city}}</dd>
+      <dt>Type of institution</dt>
+      <dd>{{=typeofinstitutionorganisation}}</dd>
+      <dt>Links</dt>
+      <dd class="links">{{=links}}</dd>
+      <dt>Name</dt>
+      <dd>{{=name}}</dd>
+      <dt>Year</dt>
+      <dd>{{=year}}</dd>
+      <dt>Curator</dt>
+      <dd>{{=namecontactofcuratororganizer}}</dd>
+      <dt>Links 2</dt>
+      <dd class="links">{{=links_2}}</dd>
+      <dt>Description</dt>
+      <dd class="text">{{=description}}</dd>
+      <dt>Focus of technology</dt>
+      <dd>{{=focusoftechnology}}</dd>
+      <dt>Target group</dt>
+      <dd>{{=targetgroup}}</dd>
+      <dt>Why is it of interest?</dt>
+      <dd class="text">{{=whyisitofinterest}}</dd>
+      <dt>User perspective</dt>
+      <dd>{{=impactuserperspective}}</dd>
+      <dt>Institution perspective</dt>
+      <dd>{{=impactinstitutionorganisationperspective}}</dd>
+      <dt>Audience involvment</dt>
+      <dd class="number" data-column="audienceinvolvment">{{=audienceinvolvment}}</dd>
+      <dt>Audience engagement</dt>
+      <dd class="number" data-column="audienceengagement">{{=audienceengagement}}</dd>
+      <dt>Audience percpetion</dt>
+      <dd class="number" data-column="audienceperception">{{=audienceperception}}</dd>
+      <dt>Exhibition elements</dt>
+      <dd class="number" data-column="exhibitionelements">{{=exhibitionelements}}</dd>
+      <dt>Technology metaphor</dt>
+      <dd class="number" data-column="technologymetaphor">{{=technologymetaphor}}</dd>
+      <dt>Technology context</dt>
+      <dd class="number" data-column="technologycontext">{{=technologycontext}}</dd>
+      <dt>Identity construction</dt>
+      <dd class="number" data-column="identityconstruction">{{=identityconstruction}}</dd>
+      <dt>Representation</dt>
+      <dd class="number" data-column="representation">{{=representation}}</dd>
+      <dt>Historical perspective</dt>
+      <dd class="number" data-column="historicalperspective">{{=historicalperspective}}</dd>
+      <dt>Stance</dt>
+      <dd class="number" data-column="stance">{{=stance}}</dd>
+      <dt>Multinationalism</dt>
+      <dd class="number" data-column="multinationalism">{{=multinationalism}}</dd>
+      <dt>Affiliation</dt>
+      <dd>{{=affiliation}}</dd>
+    </dl>
+	</div>
+</script>
+
 </html>
