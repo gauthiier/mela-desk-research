@@ -2,9 +2,9 @@ html, body {
 	height: 100%;
 	margin: 0;
 	padding: 0;
-	font-size: 90%;
-	font-family: helvetica, "helvetica neue", verdana, sans-serif;
-	background: #FFFFFF;
+	background: #FFFFFF;		
+	font-family: helvetica, "helvetica neue", verdana, sans-serif;	
+	font-size: 90%;		
 }
 
 body * {
@@ -14,7 +14,7 @@ body * {
 
 a {
 	text-decoration: none;
-	color: #009C60;
+	color: #00CD7E;
 }
 
 a:hover {
@@ -91,11 +91,11 @@ h2 {
 }
 
 .caseDetails .bar {
-	margin-top: 0.5em;
 	background: #DDD;	
 	width: 100%;
 	height: 0.5em;
 	float: left;
+	margin-top: 0.25em;
 }
 
 .caseDetails .barvalue {
@@ -104,5 +104,9 @@ h2 {
 }
 
 .caseDetails .text {
+	line-height: 125%;
+}
+
+.caseDetails .links {
 	line-height: 125%;
 }
