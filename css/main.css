@@ -1,14 +1,86 @@
-body {
-	
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	font-size: 90%;
+	font-family: helvetica, "helvetica neue", verdana, sans-serif;
+	background: #FFFFFF;
 }
 
+body * {
+	margin: 0;
+	padding: 0;
+}
+
+a {
+	text-decoration: none;
+	color: #0055FF;
+}
+
+a:hover {
+	text-decoration: underline;
+}
 
 #content .sidebar {
 	
 }
 
-#clusters .sidebar {
+#clusters {
+	height:100%;
+}
+
+.sidebar {
+	position: absolute;
+	right: 0;
 	height: 100%;
-	background: #EEEEEE;
-	width: 200px;
+	min-height:100%;
+	background: #FAFAFA;
+	border-left: 1px solid #AAAAAA;
+ 	width: 350px;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	text-overflow: ellipsis;
+}
+
+.sidebar h2 {
+	margin: 0.25em 0;
+}
+
+.sidebar .caseDetails {
+	padding: 1em;	
+}
+
+.caseDetails dt {
+	font-weight: bold;
+	margin: 0.75em 0 0.25em 0;
+}
+
+.caseDetails dd {
+	display: block;
+	width:100%;
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	overflow-y: auto;
+}
+
+.caseDetails .value {
+	width: 10%;
+	float: left;
+}
+
+.caseDetails .bar {
+	margin-top: 0.5em;
+	background: #666;	
+	height: 5px;
+	width: 90%;
+	float: left;
+}
+
+.caseDetails .barvalue {
+	background: #BBB;
+	height: 5px;	
+}
+
+.caseDetails .text {
+	line-height: 125%;
 }
