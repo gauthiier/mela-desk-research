@@ -8,6 +8,7 @@
   <script type="text/javascript" src="js/main.js"></script>
   <script type="text/javascript" src="js/jsrender.js"></script>
   <script type="text/javascript" src="js/clusters.js"></script>
+  <script type="text/javascript" src="js/d3/d3.js"></script>
   <link rel="stylesheet" type="text/css" href="css/main.css" />
   <title>CIID MELA Survey visualization</title>
 </head>
@@ -18,6 +19,15 @@
   </div>
   <div id="clusters">
     <div class="content">
+     <div id="clusters_filters">
+       <h3 id="clusters_ox_label">X axis</h3>
+       <select id="clusters_ox"></select>
+       <br/><br/>
+       <h3 id="clusters_ox_label">Y axis</h3>
+       <select id="clusters_oy"></select>
+     </div>
+     <div id="clusters_graph">
+     </div>
     </div>    
     <div class="sidebar">
     </div>

@@ -26,9 +26,9 @@ h2 {
 }
 
 #header {
-	xposition: absolute;
-	float: left;
-	padding: 2em;
+	position: absolute;
+	top: 2em;
+	left: 2em;
 }
 
 #ciidlogo {
@@ -37,6 +37,22 @@ h2 {
 
 #clusters {
 	height:100%;
+}
+
+#clusters .content {
+	float: left;
+	height: 100%;
+}
+
+#clusters_filters {
+	margin: 100px 0 0 30px;
+	float: left;
+}
+
+#clusters_graph {
+	width: 400px;
+	float: left;
+	margin: 100px 0 0 50px;
 }
 
 .sidebar {
