@@ -122,8 +122,10 @@ Clusters.prototype.updateGraph = function() {
   
   var data = {};
   
-  var xField = $("#clusters_ox").val()
-  var yField = $("#clusters_oy").val()
+  var xField = $("#clusters_ox").val();
+  var yField = $("#clusters_oy").val();
+  
+  var self = this;
     
   for(var i=0; i<this.casesList.length; i++) {
     var caseData = this.casesList[i];
@@ -132,10 +134,12 @@ Clusters.prototype.updateGraph = function() {
       data[xy] = {
         x: caseData[xField],
         y: caseData[yField],
-        n: 0
+        n: 0,
+        cases: []
       }
     }
     data[xy].n++;
+    data[xy].cases.push(caseData);
   }
   
   this.graphSvg.selectAll(".xmin").text(columnLabels[xField][0]);
@@ -154,12 +158,34 @@ Clusters.prototype.updateGraph = function() {
   enter.attr("r", function(d) { return 5 + d.n; });
   enter.attr("stroke", "#00CD7E");
   enter.attr("fill", "rgba(0, 205, 126, 0.5)");  
+  enter.on("click", function(e){
+    self.showCaseList(e.cases);
+  })
   
   circle.exit().remove();
 }
 
+Clusters.prototype.showCaseList = function(cases) {
+  function bindClickHandler(item, caseData) {
+    item.bind("click", function() {
+      $("#clusters_list .selected").removeClass("selected");
+      showDetails(caseData);
+      item.addClass("selected");      
+    })
+  }
+  console.log(cases);
+  $("#clusters_list").html("");
+  for(var i=0; i<cases.length; i++) {
+    var item = $($("#caseListItem").render(cases[i]));
+    $("#clusters_list").append(item);
+    bindClickHandler(item, cases[i]);
+  }
+}
+
+
 Clusters.prototype.resize = function() {
   var sideviewW = $("#sideview").width();
   var windowW = $(window).width();
-  //$("#clusters").css("width", (windowW - sideviewW - 10) + "px");
+  $("#clusters").css("width", (windowW - sideviewW - 1) + "px");
+  //$("#clusters_graph").css("margin-left", "0px");
 }

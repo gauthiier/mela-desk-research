@@ -55,6 +55,46 @@ h2 {
 	margin: 100px 0 0 50px;
 }
 
+#clusters_list {
+	width: 250px;
+	height: 100%;
+	float: right;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	text-overflow: ellipsis;
+	border-left: 1px solid #AAAAAA;	
+}
+
+#clusters_list {	
+}
+
+#clusters_list dl {
+	border-bottom: 1px solid #AAAAAA;
+	display: block;
+	background: #FFFFFF;
+	cursor: pointer;
+}
+
+
+#clusters_list dl:hover {
+	background: rgba(0, 205, 126, 0.75);
+	color: white;
+}
+
+#clusters_list .selected dl {
+	background: rgba(0, 205, 126, 0.75);
+	color: white;
+}
+
+#clusters_list dt {
+	margin: 0;
+	padding: 5px 0 0 5px;
+}
+
+#clusters_list dd {
+	padding: 0 0 5px 5px;
+}
+
 #sideview {
 	xposition: absolute;
 	xright: 0;
