@@ -34,14 +34,14 @@ var columnList = [
 var columnLabels = {
   'audienceinvolvment' : ['passive', 'active', 'Measure of the cases in terms of how much interaction (physical or otherwise) they expect or require.'],
   'audienceengagement' : ['individual', 'collective', 'Measure of the cases in terms of the intention or actuality of them to be experience by many people simultaneously, or by one individual at a time.'],
-  'audienceperception' : ['immersive', 'reflective', 'Measure of the cases in terms of physical or cognitively engaging it is intended to be.  We place in opposition here tendencies towards 'artistic' or 'interpretive' forms, versus more informational, pedagogic or didactic strategies.'],
+  'audienceperception' : ['immersive', 'reflective', 'Measure of the cases in terms of physical or cognitively engaging it is intended to be.  We place in opposition here tendencies towards "artistic" or "interpretive" forms, versus more informational, pedagogic or didactic strategies.'],
   'exhibitionelements' : ['object', 'virtual', 'Measure of the cases as to their predominantly digital, simulated, distributed features, as opposed to physical, bodily and situated applications.'],
-  'technologymetaphor' : ['tool', 'map', 'Measure of the cases in terms of the facility they give audiences or users to explore or 'probe' an informational or factual landscape.  This is juxtaposed to a tendency to use technologies to help situate users or audiences within this same landscape or field.'],
+  'technologymetaphor' : ['tool', 'map', 'Measure of the cases in terms of the facility they give audiences or users to explore or "probe" an informational or factual landscape.  This is juxtaposed to a tendency to use technologies to help situate users or audiences within this same landscape or field.'],
   'technologycontext' : ['mobile', 'stationary', 'Measure of the cases in terms of their ability to be translated, transported or movable by users or audiences.'],
   'identityconstruction' : ['personal', 'institutional', 'Measure of the cases in terms of thier capacity to reflect the opinions, experience or narratives of individual, or whether they articulates a more systematic, impersonal and formal inclination.'],
   'representation' : ['minority', 'majority', 'Measure of the cases in terms of the intention or actuality to project the views, histories, artifacts or particulars of a marginalised, minority or little know outlook or approach.'],
   'historicalperspective' : ['contempory', 'historical', 'Measure of the cases in terms of their historical emphasis.  Do they project a contemporary world view (recent events, news, accounts) in some way, or are ideas projected through a more traditionally historical viewpoint?'],
-  'stance' : ['conservative', 'historical', 'Measure of the cases in terms of he degree to which they attempt to become an 'agent for change,' putting forward a new, challenging or provocative worldview.'],
+  'stance' : ['conservative', 'historical', 'Measure of the cases in terms of he degree to which they attempt to become an "agent for change", putting forward a new, challenging or provocative worldview.'],
   'multinationalism' : ['trans-national', 'national', 'Measure of the cases in terms of their emphasis or attitude towards nationalism and patriotism, opposed here to a more international or global frame of mind.']
 }
 
