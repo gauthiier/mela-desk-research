@@ -16,13 +16,19 @@ Clusters.prototype.showDetails = function(caseData) {
     var value = Number(field.text());
     if (isNaN(value)) value = 0;
     
-    console.log(field.attr("data-column"));
+    var columnName = field.attr("data-column");
+    var labels = columnLabels[columnName];
+    console.log(labels);
     
     field.html(
-      "<div class='value'>"+value+"</div>" +
+      "<div class='barContainer'>" +
+      "<div class='low'>"+labels[0]+"</div>" +
+      "<div class='hi'>"+labels[1]+"</div>" +
+      "<div class='value' style='left:" + (value * 20 + 1) + "%'>"+value+"</div>" +
       "<div class='bar'>" + 
       "<div class='barvalue' style='width:" + (value * 20) + "%'></div>" +
-      "</div>"
+      "</div>"+
+      "</div>"      
     )
   })
   

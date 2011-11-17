@@ -14,11 +14,15 @@ body * {
 
 a {
 	text-decoration: none;
-	color: #0055FF;
+	color: #009C60;
 }
 
 a:hover {
 	text-decoration: underline;
+}
+
+h2 {
+	font-size: 200%;
 }
 
 #content .sidebar {
@@ -63,22 +67,40 @@ a:hover {
 	overflow-y: auto;
 }
 
-.caseDetails .value {
-	width: 10%;
+.caseDetails .barContainer {
+	position: relative;
+}
+
+.caseDetails .barContainer .low {
 	float: left;
+	font-size: 80%;
+}
+
+.caseDetails .barContainer .hi {
+	float: right;
+	font-size: 80%;	
+}
+
+.caseDetails .value {
+	position: absolute;
+	left: 0;
+	top: 1.75em;
+	color: #000;
+	font-size: 90%;
+	display: none;
 }
 
 .caseDetails .bar {
 	margin-top: 0.5em;
-	background: #666;	
-	height: 5px;
-	width: 90%;
+	background: #DDD;	
+	width: 100%;
+	height: 0.5em;
 	float: left;
 }
 
 .caseDetails .barvalue {
-	background: #BBB;
-	height: 5px;	
+	background: #00CD7E;
+	height: 0.5em;	
 }
 
 .caseDetails .text {
