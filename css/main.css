@@ -25,8 +25,14 @@ h2 {
 	font-size: 200%;
 }
 
-#content .sidebar {
-	
+#header {
+	xposition: absolute;
+	float: left;
+	padding: 2em;
+}
+
+#ciidlogo {
+	margin-left: 2em;
 }
 
 #clusters {
@@ -34,8 +40,9 @@ h2 {
 }
 
 .sidebar {
-	position: absolute;
-	right: 0;
+	xposition: absolute;
+	xright: 0;
+	float: right;
 	height: 100%;
 	min-height:100%;
 	background: #FAFAFA;
