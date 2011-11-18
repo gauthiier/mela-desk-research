@@ -7,6 +7,15 @@ function Map() {
     mapTypeId: google.maps.MapTypeId.ROADMAP
   };
   this.gmap = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+  this.m = null;
+
+  var self = this;
+  $(window).bind('resize', function(e) {
+    self.resize();
+  });
+
+  this.resize();
+
 }
 
 var timeout = 700;
@@ -44,16 +53,43 @@ Map.prototype.marker = function (location, melacase) {
      map: this.gmap,
      title: melacase.nameoftheinstitutionorganisation,
      draggable: false,
-     icon: "http://labs.google.com/ridefinder/images/mm_20_gray.png"
+     icon: "img/marker_white.png"
   });
+  var c = this.markerContent(melacase);
+  var info = new google.maps.InfoWindow({
+     content: c
+  });
+  m.info = info;
   google.maps.event.addListener(m, 'click',
-      function close(k) {
+      function close(k, map) {
         return function() {
+          if(map.m) {
+            map.m.setOptions({icon: "img/marker_grey.png"});
+            map.m.info.close();
+          }
           showDetails(k);
-          m.setOptions({icon: "http://labs.google.com/ridefinder/images/mm_20_yellow.png"});
+          m.setOptions({icon: "img/marker_turq.png"});
+          m.info.open(map.gmap,m);
+          map.m = m;
         }
-      }(melacase)
+      }(melacase, this)
   );
+}
+
+Map.prototype.markerContent = function (melacase) {
+  var content = '<div class="infowindow">';
+  content += '<div id="title">' + melacase.name + '</div>';
+  content += '<div id="place">' + melacase.nameoftheinstitutionorganisation + '</div>';
+  content += '<div id="place">' + melacase.city + ', ' + melacase.country + '</div>';
+  content += '</div>';
+  return content;
+}
+
+Map.prototype.resize = function() {
+  var sideviewW = $("#sideview").width();
+  var windowW = $(window).width();
+  $("#clusters").css("width", (windowW - sideviewW - 1) + "px");
+  google.maps.event.trigger(this.gmap, 'resize');
 }
 
 

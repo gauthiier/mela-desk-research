@@ -37,6 +37,7 @@ h2 {
 
 #clusters {
 	height:100%;
+        width: 60%;
 	float: left;	
 }
 
@@ -95,8 +96,7 @@ h2 {
 	padding: 0 0 5px 5px;
 }
 
-.map {
-    width:950px;
+#map_canvas {
     height:100%;
 }
 
@@ -178,4 +178,26 @@ h2 {
 
 .caseDetails .links {
 	line-height: 125%;
+}
+
+.infowindow {
+    width: 200px;
+    color: #777777;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+.infowindow #title {
+    font-size: 12px;
+    font-weight: bold;
+    padding: 0 0 0.5em 0;
+}
+
+.infowindow #name {
+    font-size: 10px;
+    padding: 0 0 0.5em 0;
+}
+
+.infowindow #place {
+    font-size: 10px;
+    padding: 0 0 0.5em 0;
 }
