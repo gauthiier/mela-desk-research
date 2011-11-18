@@ -7,14 +7,20 @@
   <script type="text/javascript" src="js/data.js"></script>
   <script type="text/javascript" src="js/sideview.js"></script>
   <script type="text/javascript" src="js/map.js"></script>
+  <script type="text/javascript" src="js/jsrender.js"></script>
   <script type="text/javascript" src="js/main.js"></script>
   <script type="text/javascript" src="js/clusters.js"></script>
   <link rel="stylesheet" type="text/css" href="css/main.css" />
   <title>CIID MELA Survey visualization</title>
 </head>
 <body>
+  <div id="header">
+    <img src="img/mela_logo.png" id="melalogo" height="30px"/>
+    <img src="img/ciid_logo.png" id="ciidlogo" height="30px"/>
+  </div>
   <div id="clusters">
-    <div id="mapcontent" class="content">
+    <div class="content">
+      <div id="map_canvas" class="map"></div>
     </div>
   </div>
   <div id="sideview">

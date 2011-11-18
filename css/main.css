@@ -95,6 +95,12 @@ h2 {
 	padding: 0 0 5px 5px;
 }
 
+.map {
+    width:950px;
+    height:100%;
+}
+
+
 #sideview {
 	xposition: absolute;
 	xright: 0;

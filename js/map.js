@@ -6,7 +6,7 @@ function Map() {
     center: latlng,
     mapTypeId: google.maps.MapTypeId.ROADMAP
   };
-  this.gmap = new google.maps.Map(document.getElementById("mapcontent"), myOptions);
+  this.gmap = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 }
 
 var timeout = 700;
@@ -23,34 +23,34 @@ Map.prototype.displayCases = function(casesList) {
 }
 
 Map.prototype.marker_cb = function (melacase) {
-  console.log('marker_cb');
   var geocoder = new google.maps.Geocoder();
   var pos = geocoder.geocode({'address' : melacase.nameoftheinstitutionorganisation + ' , '
                                         + melacase.city + ' , '
                                         + melacase.country
                              },
-                             function close(map) {
-                               return function(r, s) {
+                             function close(map, casedata) {
+                               return function(res, status) {
                                     if(status == google.maps.GeocoderStatus.OK && res.length > 0) {
-                                        map.marker(res[0].geometry.location, melacase);
+                                        map.marker(res[0].geometry.location, casedata);
                                     }
-                                }(this)
-                             });
+                                }
+                             }(this, melacase));
 }
 
 Map.prototype.marker = function (location, melacase) {
-  console.log('marker');
   var latlng = location;
   var m = new google.maps.Marker({
      position: latlng,
      map: this.gmap,
      title: melacase.nameoftheinstitutionorganisation,
-     draggable: false
+     draggable: false,
+     icon: "http://labs.google.com/ridefinder/images/mm_20_gray.png"
   });
   google.maps.event.addListener(m, 'click',
       function close(k) {
         return function() {
           showDetails(k);
+          m.setOptions({icon: "http://labs.google.com/ridefinder/images/mm_20_yellow.png"});
         }
       }(melacase)
   );
