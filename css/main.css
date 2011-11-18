@@ -27,17 +27,30 @@ h2 {
 
 #header {
 	position: absolute;
-	top: 2em;
-	left: 2em;
+	top: 25px;
+	left: 100px;
+	z-index: 5;
+	background: white;
+	padding: 8px 10px 8px 8px;
+}
+
+#header img {
+	float: left;
+}
+
+#menu {
+	color: #00CD7E;
+	float: left;
+	margin-left: 20px;
 }
 
 #ciidlogo {
 	margin-left: 2em;
 }
 
-#clusters {
+#clusters, #map_container {
 	height:100%;
-        width: 60%;
+  width: 60%;
 	float: left;	
 }
 

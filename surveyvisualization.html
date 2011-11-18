@@ -2,12 +2,13 @@
 <html lang="en-US">
 <head>
   <meta charset="UTF-8">
-  <!--<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>-->
-  <script src="js/jquery.js"></script>
+  <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+  <script type="text/javascript" src="js/jquery.js"></script>  
   <script type="text/javascript" src="js/data.js"></script>
   <script type="text/javascript" src="js/main.js"></script>
   <script type="text/javascript" src="js/jsrender.js"></script>
   <script type="text/javascript" src="js/clusters.js"></script>
+  <script type="text/javascript" src="js/map.js"></script>
   <script type="text/javascript" src="js/sideview.js"></script>
   <script type="text/javascript" src="js/d3/d3.js"></script>
   <link rel="stylesheet" type="text/css" href="css/main.css" />
@@ -17,6 +18,14 @@
   <div id="header">
     <img src="img/mela_logo.png" id="melalogo" height="30px"/>
     <img src="img/ciid_logo.png" id="ciidlogo" height="30px"/>
+    <div id="menu">
+        <a href="#map" id="map_link">Map</a> | 
+        <a href="#clusters" id="clusters_link">Clusters</a>        
+    </div>
+  </div>
+  </div>
+  <div id="map_container">
+    <div id="map_canvas"></div>
   </div>
   <div id="clusters">
     <div class="content">

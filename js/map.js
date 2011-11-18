@@ -8,7 +8,7 @@ function Map() {
   };
   this.gmap = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
   this.m = null;
-
+  
   var self = this;
   $(window).bind('resize', function(e) {
     self.resize();
@@ -88,7 +88,7 @@ Map.prototype.markerContent = function (melacase) {
 Map.prototype.resize = function() {
   var sideviewW = $("#sideview").width();
   var windowW = $(window).width();
-  $("#clusters").css("width", (windowW - sideviewW - 1) + "px");
+  $("#map_container").css("width", (windowW - sideviewW - 1) + "px");
   google.maps.event.trigger(this.gmap, 'resize');
 }
 

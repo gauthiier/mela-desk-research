@@ -4,7 +4,6 @@
 
 function Clusters(casesList) {
   this.casesList = casesList;
-  showDetails(casesList[0]);
   
   var self = this;
   $(window).bind('resize', function(e) {
