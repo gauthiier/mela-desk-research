@@ -8,15 +8,27 @@ function init() {
   console.log("Init");  
   $("#clusters").hide();  
   $("#map_container").hide();
+  $("#survey_container").hide();
   
   $("#map_link").bind("click", function() {
-    $("#clusters").hide();  
+    $("#clusters").hide();
+    $("#survey_container").hide();
     $("#map_container").show();
+    $("#sideview").show();
   })
   
   $("#clusters_link").bind("click", function() {
-    $("#map_container").hide();    
+    $("#map_container").hide();
+    $("#survey_container").hide();
+    $("#sideview").show();
     $("#clusters").show();  
+  })
+
+  $("#survey_link").bind("click", function() {
+    $("#clusters").hide();
+    $("#map_container").hide();
+    $("#sideview").hide();
+    $("#survey_container").show();
   })
   
   loadData(dataLoaded_cb);
