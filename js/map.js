@@ -4,6 +4,13 @@ function Map() {
   var myOptions = {
     zoom: 2,
     center: latlng,
+		panControl: false,
+		scaleControl: false,
+		zoomControl: true,
+		zoomControlOptions: {
+		  style: google.maps.ZoomControlStyle.SMALL,
+			position: google.maps.ControlPosition.TOP_RIGHT
+		},
     mapTypeId: google.maps.MapTypeId.ROADMAP
   };
   this.gmap = new google.maps.Map(document.getElementById("map_canvas"), myOptions);

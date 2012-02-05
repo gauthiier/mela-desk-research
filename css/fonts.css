@@ -1,0 +1,47 @@
+@font-face {
+    font-family: 'RockwellRegular';
+    src: url('http://mela-project.eu/fonts/rock-webfont.eot');
+    src: url('http://mela-project.eu/fonts/rock-webfont.eot?#iefix') format('embedded-opentype'),
+         url('http://mela-project.eu/fonts/rock-webfont.woff') format('woff'),
+         url('http://mela-project.eu/fonts/rock-webfont.ttf') format('truetype'),
+         url('http://mela-project.eu/fonts/rock-webfont.svg#RockwellRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'RockwellBold';
+    src: url('http://mela-project.eu/fonts/rockb-webfont.eot');
+    src: url('http://mela-project.eu/fonts/rockb-webfont.eot?#iefix') format('embedded-opentype'),
+         url('http://mela-project.eu/fonts/rockb-webfont.woff') format('woff'),
+         url('http://mela-project.eu/fonts/rockb-webfont.ttf') format('truetype'),
+         url('http://mela-project.eu/fonts/rockb-webfont.svg#RockwellBold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'RockwellItalic';
+    src: url('http://mela-project.eu/fonts/rocki-webfont.eot');
+    src: url('http://mela-project.eu/fonts/rocki-webfont.eot?#iefix') format('embedded-opentype'),
+         url('http://mela-project.eu/fonts/rocki-webfont.woff') format('woff'),
+         url('http://mela-project.eu/fonts/rocki-webfont.ttf') format('truetype'),
+         url('http://mela-project.eu/fonts/rocki-webfont.svg#RockwellItalic') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'RockwellLightRegular';
+    src: url('http://mela-project.eu/fonts/rockwell_light-webfont.eot');
+    src: url('http://mela-project.eu/fonts/rockwell_light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('http://mela-project.eu/fonts/rockwell_light-webfont.woff') format('woff'),
+         url('http://mela-project.eu/fonts/rockwell_light-webfont.ttf') format('truetype'),
+         url('http://mela-project.eu/fonts/rockwell_light-webfont.svg#RockwellLightRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}

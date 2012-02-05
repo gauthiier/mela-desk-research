@@ -27,6 +27,7 @@ function showDetails(melacase) {
 		$("#sideview").html(details);
 	} else if(typeof(emitdetails) != 'undefined' && emitdetails) {
 		details = emitDetails(melacase);
+		$("#sideview").html(details);
 	}
 	
   //adds bar representing the value next to the value number
