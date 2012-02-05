@@ -23,7 +23,7 @@ function showDetails(melacase) {
 	
 	var details;
 	if(typeof(emitdetails) === 'undefined') {
-  	details = $($("#caseDetails").render(caseData));
+  	details = $($("#caseDetails").render(melacase));
 		$("#sideview").html(details);
 	} else if(typeof(emitdetails) != 'undefined' && emitdetails) {
 		details = emitDetails(melacase);

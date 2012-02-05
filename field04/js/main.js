@@ -23,8 +23,6 @@ function init() {
   })
   
   loadData(dataLoaded_cb, docID);
-
-	console.log("Go!");
 }
 
 

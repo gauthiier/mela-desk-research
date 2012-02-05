@@ -36,14 +36,20 @@ function init() {
 
 
 //called when data is finished loading data
-function dataLoaded_cb(casesList) {
-  console.log("Number of loaded cases: " + casesList.length);
+function dataLoaded_cb(survey) {
+  console.log("Number of loaded cases: " + survey.cases.length);
+
+	//decorate our cases - backward compatible with v0 (marcin)
+	// --> clusters
+	for(i = 0; i < survey.cases.length; i++) {
+		decorate(survey.cases[i]);
+	}
   
   var map = new Map();
-  map.displayCases(casesList);  
+  map.displayCases(survey.cases);  
   $("#map_container").show();  
   
-  var clusters = new Clusters(casesList);
+  var clusters = new Clusters(survey.cases);
 }
 
 $(document).ready(init);

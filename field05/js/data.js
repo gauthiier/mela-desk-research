@@ -1,5 +1,36 @@
 //-- data labels ---------------------------------------------------------------
 
+function decorate(melacase) {
+	melacase.timestamp = melacase.data.col_A;	
+  melacase.nameoftheinstitutionorganisation = melacase.data.col_B;
+  melacase.country = melacase.data.col_C;
+  melacase.city = melacase.data.col_D;
+  melacase.typeofinstitutionorganisation = melacase.data.col_E;
+  melacase.links = melacase.data.col_F;
+  melacase.name = melacase.data.col_G;
+  melacase.year = melacase.data.col_H;
+  melacase.namecontactofcuratororganizer = melacase.data.col_I;
+  melacase.links_2 = melacase.data.col_J;
+  melacase.description = melacase.data.col_K;
+  melacase.focusoftechnology = melacase.data.col_L;
+  melacase.targetgroup = melacase.data.col_M;
+  melacase.whyisitofinterest = melacase.data.col_N;
+  melacase['impact-userperspective'] = melacase.data.col_O;
+  melacase['impact-institutionorganisationperspective'] = melacase.data.col_P;
+  melacase.audienceinvolvment = melacase.data.col_Q;
+  melacase.audienceengagement = melacase.data.col_R;
+  melacase.audienceperception = melacase.data.col_S;
+  melacase.exhibitionelements = melacase.data.col_T;
+  melacase.technologymetaphor = melacase.data.col_U;
+  melacase.technologycontext = melacase.data.col_V;
+  melacase.identityconstruction = melacase.data.col_W;
+  melacase.representation = melacase.data.col_X;
+  melacase.historicalperspective = melacase.data.col_Y;
+  melacase.stance = melacase.data.col_Z;
+  melacase.multinationalism = melacase.data.col_AA;
+  melacase.affiliation = melacase.data.col_AB;
+}
+
 var columnList = [
   'timestamp', 'Time stamp',
   'nameoftheinstitutionorganisation', 'Institution',
