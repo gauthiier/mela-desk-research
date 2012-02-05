@@ -6,7 +6,6 @@ if (!window.console) {
 
 function init() {
   console.log("Init");  
-  $("#clusters").hide();  
   $("#map_container").hide();
   $("#survey_container").hide();
   
@@ -16,14 +15,6 @@ function init() {
     $("#map_container").show();
     $("#sideview").show();
   })
-  
-  $("#clusters_link").bind("click", function() {
-    $("#map_container").hide();
-    $("#survey_container").hide();
-    $("#sideview").show();
-    $("#clusters").show();  
-  })
-
   $("#survey_link").bind("click", function() {
     $("#clusters").hide();
     $("#map_container").hide();
@@ -31,19 +22,16 @@ function init() {
     $("#survey_container").show();
   })
   
-  loadData(dataLoaded_cb);
+  loadData(dataLoaded_cb, docID);
 }
 
 
 //called when data is finished loading data
-function dataLoaded_cb(casesList) {
-  console.log("Number of loaded cases: " + casesList.length);
-  
+function dataLoaded_cb(survey) {
+  console.log("Number of loaded cases: " + survey.cases.length);  
   var map = new Map();
-  map.displayCases(casesList);  
+  map.displayCases(survey.cases);  
   $("#map_container").show();  
-  
-  var clusters = new Clusters(casesList);
 }
 
 $(document).ready(init);

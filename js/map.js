@@ -16,11 +16,13 @@ function Map() {
 
   this.resize();
 
+	console.log('Loading map done.');
+
 }
 
 var timeout = 700;
 Map.prototype.displayCases = function(casesList) {
-  console.log('Loading cases...');
+  console.log('Loading map cases...');
   var who = this;
   for(var i=0; i<casesList.length; i++) {
         setTimeout((function close(k) {
@@ -29,13 +31,14 @@ Map.prototype.displayCases = function(casesList) {
                       }
                     })(casesList[i]), timeout * i);
   }  
+	console.log('Loading map cases done.');
 }
 
 Map.prototype.marker_cb = function (melacase) {
-  var geocoder = new google.maps.Geocoder();
-  var pos = geocoder.geocode({'address' : melacase.nameoftheinstitutionorganisation + ' , '
-                                        + melacase.city + ' , '
-                                        + melacase.country
+  var geocoder = new google.maps.Geocoder();  
+  var pos = geocoder.geocode({'address' : melacase.data.col_B + ' , '
+                                        + melacase.data.col_D + ' , '
+                                        + melacase.data.col_C
                              },
                              function close(map, casedata) {
                                return function(res, status) {
@@ -51,9 +54,9 @@ Map.prototype.marker = function (location, melacase) {
   var m = new google.maps.Marker({
      position: latlng,
      map: this.gmap,
-     title: melacase.nameoftheinstitutionorganisation,
+     title: melacase.data.col_B,
      draggable: false,
-     icon: "img/marker_white.png"
+     icon: "../img/marker_white.png"
   });
   var c = this.markerContent(melacase);
   var info = new google.maps.InfoWindow({
@@ -64,11 +67,11 @@ Map.prototype.marker = function (location, melacase) {
       function close(k, map) {
         return function() {
           if(map.m) {
-            map.m.setOptions({icon: "img/marker_grey.png"});
+            map.m.setOptions({icon: "../img/marker_grey.png"});
             map.m.info.close();
           }
           showDetails(k);
-          m.setOptions({icon: "img/marker_turq.png"});
+          m.setOptions({icon: "../img/marker_turq.png"});
           m.info.open(map.gmap,m);
           map.m = m;
         }
@@ -78,9 +81,9 @@ Map.prototype.marker = function (location, melacase) {
 
 Map.prototype.markerContent = function (melacase) {
   var content = '<div class="infowindow">';
-  content += '<div id="title">' + melacase.name + '</div>';
-  content += '<div id="place">' + melacase.nameoftheinstitutionorganisation + '</div>';
-  content += '<div id="place">' + melacase.city + ', ' + melacase.country + '</div>';
+  content += '<div id="title">' + melacase.data.col_B + '</div>';
+  content += '<div id="place">' + melacase.data.col_B + '</div>';
+  content += '<div id="place">' + melacase.data.col_D + ', ' + melacase.data.col_C + '</div>';
   content += '</div>';
   return content;
 }
