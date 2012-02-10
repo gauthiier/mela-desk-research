@@ -25,19 +25,14 @@ function MelaCase(survey) {
 
 MelaCase.prototype.addEntry = function(entry) {
   var col = Number(entry.gs$cell.col) - 1;
-  var propertyName = columnList[col*2];
-  var value = entry.content.$t;
-  if (!isNaN(value)) value = Number(value);
-  this[propertyName] = value;
-}
-
-MelaCase.prototype.addEntryColName = function(entry) {
-  var col = Number(entry.gs$cell.col) - 1;
   var value = entry.content.$t;
   if (!isNaN(value)) value = Number(value);
   this.data[toColName(col)] = value;   
 }
 
+// converts column index to google doc column labels
+// (i.e. 1 = col_A, 2 = col_B, ..., 27 = col_AA, 28 = col_AB, etc..)
+// all MelaCases are indexed with this scheme (i.e. melacase.data.col_A = first column in spreadsheet data)
 function toColName(colnbr) {
 	var name = "col_";
 	if(colnbr < 26) {
@@ -139,7 +134,7 @@ function jsonParseCellEntries(json) {
       survey.cases[entry.gs$cell.row] = new MelaCase(survey);
     }
     
-    survey.cases[entry.gs$cell.row].addEntryColName(entry);    
+    survey.cases[entry.gs$cell.row].addEntry(entry);    
   }
   
   survey.cases.shift();

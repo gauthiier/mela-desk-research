@@ -39,6 +39,12 @@ h2 {
 	height: 42px;
 }
 
+#index img {
+	float: center;
+	height: 72px;
+}
+
+
 #field {
 	position: absolute;
 	top: 10px;
@@ -135,7 +141,7 @@ h2 {
 	min-height:100%;
 	background: #FAFAFA;
 	border-left: 1px solid #AAAAAA;
- 	width: 350px;
+ 	width: 40%;
 	overflow-x: hidden;
 	overflow-y: scroll;
 	text-overflow: ellipsis;
@@ -148,6 +154,23 @@ h2 {
 #sideview .caseDetails {
 	padding: 1em;	
 }
+
+#survey_container {
+	position: relative;
+	top: 75px;
+	left: 100px;
+	background: white;
+	padding: 8px 10px 8px 0px;
+}
+
+#list_container {
+	position: relative;
+	top: 65px;
+	left: 25px;
+	background: white;
+	padding: 8px 10px 8px 8px;
+}
+
 
 .caseDetails dt {
 	font-weight: bold;
@@ -228,11 +251,60 @@ h2 {
     padding: 0 0 0.5em 0;
 }
 
-#survey_container {
-	position: relative;
-	top: 75px;
-	left: 100px;
-	background: white;
-	padding: 8px 10px 8px 8px;
+.center {
+	width:100%; 
+	position:absolute; 
+	display:block; 
+	top:45%; 
+	left:25%
 }
+
+.surveybox {
+	width: 100px;
+	height: 60px;
+}
+
+.field {	
+	top: 10px;
+	height: 57px;
+	width: 150px;
+	z-index: 5;
+	padding: 8px 8px 8px 8px;	
+	border: 1px black;
+}
+
+.field a {
+	text-decoration: none;
+	color: #FFFFFF;
+}
+
+.field h2 {
+	text-align: center;
+}
+
+.list-title {
+    font: 12px sans-serif;
+    font-weight: bold;
+    vertical-align: top;
+		text-align: left;
+}
+
+.list-element {
+    font: 11px sans-serif;
+    vertical-align: top;
+    text-align: left;
+}
+
+#list_container table{
+    table-layout: fixed;
+    width: 100%;
+}
+
+#list_container td {
+  overflow: hidden;
+	width: 90px;
+}
+
+
+
 

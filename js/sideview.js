@@ -1,6 +1,5 @@
 function emitDetails(melacase) {
-	var details = $("#caseDetails");
-	//var details = $("#sideview");
+	var details = $("#" + melacase.survey.detailsdiv);
 	var inline = "";
 	inline += "<h2>" + melacase.data.col_B+ "</h2>";
 	inline += "<dl>";
@@ -9,8 +8,8 @@ function emitDetails(melacase) {
 		// need to know if we work with numbers or paragraph text etc...
 		// as defined in datatypes		
 		var cl = "";
-		if(typeof(datatypes) != 'undefined' && k in datatypes) {
-			cl = "class=" + datatypes[k];
+		if(typeof(melacase.survey.datatypes) != 'undefined' && k in melacase.survey.datatypes) {
+			cl = "class=" + melacase.survey.datatypes[k];
 		}
 		inline += "<dd " + cl + ">" + melacase.data[k] + "</dd>";
 	}		
@@ -22,10 +21,10 @@ function emitDetails(melacase) {
 function showDetails(melacase) {
 	
 	var details;
-	if(typeof(emitdetails) === 'undefined') {
-  	details = $($("#caseDetails").render(melacase));
+	if(typeof(melacase.survey.emitdetails) === 'undefined' || !melacase.survey.emitdetails) {
+  	details = $($("#" + melacase.survey.detailsdiv).render(melacase));
 		$("#sideview").html(details);
-	} else if(typeof(emitdetails) != 'undefined' && emitdetails) {
+	} else if(typeof(melacase.survey.emitdetails) != 'undefined' && melacase.survey.emitdetails) {
 		details = emitDetails(melacase);
 		$("#sideview").html(details);
 	}

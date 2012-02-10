@@ -63,7 +63,7 @@ Map.prototype.marker = function (location, melacase) {
      map: this.gmap,
      title: melacase.data.col_B,
      draggable: false,
-     icon: "../img/marker_white.png"
+     icon: "../img/" + melacase.survey.mapicon
   });
   var c = this.markerContent(melacase);
   var info = new google.maps.InfoWindow({
@@ -78,7 +78,7 @@ Map.prototype.marker = function (location, melacase) {
             map.m.info.close();
           }
           showDetails(k);
-          m.setOptions({icon: "../img/marker_turq.png"});
+          m.setOptions({icon: "../img/marker_white.png"});
           m.info.open(map.gmap,m);
           map.m = m;
         }
