@@ -46,6 +46,11 @@ function dataLoaded_cb(survey) {
 	//create map view
   var map = new Map();
   map.displayCases(survey.cases);  
+  
+  //TEMP
+  showDetails(survey.cases[0]);
+  sideviewEdit();
+  
   $("#map_container").show();  
 }
 

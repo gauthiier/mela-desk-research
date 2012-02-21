@@ -229,6 +229,29 @@ h2 {
 	line-height: 125%;
 }
 
+.caseDetails dd {
+  margin-bottom: 1em;
+}
+
+.caseDetails li {
+  margin-top: 0.5em;
+}
+
+.caseDetails li input {
+  margin-right: 0.5em;
+}
+
+
+
+.caseDetails p {
+  margin: 0.25em 0 0.5em 0;
+}
+
+.caseDetails td {
+  padding: 0.25em;
+}
+
+
 .infowindow {
     width: 200px;
     color: #777777;

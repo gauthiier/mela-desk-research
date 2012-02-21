@@ -2,18 +2,23 @@
 
 // MelaSurvey -> global data for a given survey
 function MelaSurvey(docID) {
-	this.labels = [];
+	this.fields = [];
 	this.cases = [];
 	this.id = docID;
+  this.headerRows = ["section", "label", "description", "type", "constraints"];
 }
 
 //first row of data in the survey table is labeling data (column name)
-MelaSurvey.prototype.addLabel = function(entry) {
+MelaSurvey.prototype.addFieldInfo = function(entry) {
 	var row = Number(entry.gs$cell.row);
-	if(row != 1) return;
-	var col = Number(entry.gs$cell.col) - 1;
+  var col = Number(entry.gs$cell.col) - 1;  
+  var propertyName = this.headerRows[row - 1];
 	var value = entry.content.$t;
-	this.labels[toColName(col)] = value;
+  if (!this.fields[toColName(col)]) {
+    this.fields[toColName(col)] = {};
+    this.fields[toColName(col)].col = col;
+  }
+	this.fields[toColName(col)][propertyName] = value;
 }
 
 // MelaCase -> rows in table
@@ -124,23 +129,27 @@ function jsonParseCellEntries(json) {
   
   for (var i = 0; i < json.feed.entry.length; i++) {
     var entry = json.feed.entry[i];
+    
+    var isHeaderRow = Number(entry.gs$cell.row) <= survey.headerRows.length;
+    
+    if (isHeaderRow) {
+      survey.addFieldInfo(entry);      
+    }
+    else {
+      if (!survey.cases[entry.gs$cell.row]) {
+        survey.cases[entry.gs$cell.row] = new MelaCase(survey);
+      }
+    
+      survey.cases[entry.gs$cell.row].addEntry(entry);    
+    }
+  }
 
-    if (entry.gs$cell.row == '1') {
-      survey.addLabel(entry);      
-      continue;
-    }
-    
-    if (!survey.cases[entry.gs$cell.row]) {
-      survey.cases[entry.gs$cell.row] = new MelaCase(survey);
-    }
-    
-    survey.cases[entry.gs$cell.row].addEntry(entry);    
+  //remove empty header rows
+  while(!survey.cases[0]) {
+    survey.cases.shift();
   }
   
-  survey.cases.shift();
-  survey.cases.shift();
-  
   console.log('Loading data done');
-    
+  
   loadData_callback(survey);
 }

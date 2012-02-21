@@ -42,9 +42,11 @@ Map.prototype.displayCases = function(casesList) {
 }
 
 Map.prototype.marker_cb = function (melacase) {
-  var geocoder = new google.maps.Geocoder();  
-  var pos = geocoder.geocode({'address' : melacase.data.col_B + ' , '
+  console.log('address' + melacase.data.col_B + ' , '
                                         + melacase.data.col_D + ' , '
+                                        + melacase.data.col_C);
+  var geocoder = new google.maps.Geocoder();  
+  var pos = geocoder.geocode({'address' : melacase.data.col_D + ' , '
                                         + melacase.data.col_C
                              },
                              function close(map, casedata) {
