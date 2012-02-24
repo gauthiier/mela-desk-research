@@ -45,22 +45,30 @@ h2 {
 }
 
 
-#field {
+#fieldList {
 	position: absolute;
 	top: 10px;
 	left: 150px;
 	z-index: 5;
-	padding: 8px 8px 8px 8px;	
 }
 
-#field a {
+.field {
+	padding: 8px 8px 8px 8px;	
+  float: left;
+}
+
+.field a {
 	text-decoration: none;
 	color: #FFFFFF;
 }
 
-#menu {
+.field a:hover {
+  text-decoration: underline;
+}
+
+.menu {
 	color: #FFFFFF;
-	margin-left: 20px;
+	margin-top: 0.35em;
 }
 
 #ciidlogo {
@@ -289,8 +297,8 @@ h2 {
 
 .field {	
 	top: 10px;
-	height: 57px;
-	width: 150px;
+	height: 33px;
+	width: 100px;
 	z-index: 5;
 	padding: 8px 8px 8px 8px;	
 	border: 1px black;
@@ -328,6 +336,13 @@ h2 {
 	width: 90px;
 }
 
+.buttonLink {
+  font-weight: bold;
+}
+
+.right {
+  float: right;
+}
 
 
 

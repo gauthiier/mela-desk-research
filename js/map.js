@@ -32,19 +32,16 @@ Map.prototype.displayCases = function(casesList) {
   console.log('Loading map cases...');
   var who = this;
   for(var i=0; i<casesList.length; i++) {
-        setTimeout((function close(k) {
+        setTimeout((function close(k, i) {
                       return function() {
                         who.marker_cb(k);
                       }
-                    })(casesList[i]), timeout * i);
+                    })(casesList[i], i), timeout * i);
   }  
 	console.log('Loading map cases done.');
 }
 
 Map.prototype.marker_cb = function (melacase) {
-  console.log('address' + melacase.data.col_B + ' , '
-                                        + melacase.data.col_D + ' , '
-                                        + melacase.data.col_C);
   var geocoder = new google.maps.Geocoder();  
   var pos = geocoder.geocode({'address' : melacase.data.col_D + ' , '
                                         + melacase.data.col_C
@@ -65,7 +62,7 @@ Map.prototype.marker = function (location, melacase) {
      map: this.gmap,
      title: melacase.data.col_B,
      draggable: false,
-     icon: "../img/" + melacase.survey.mapicon
+     icon: "img/" + melacase.survey.info.mapicon
   });
   var c = this.markerContent(melacase);
   var info = new google.maps.InfoWindow({
@@ -76,11 +73,11 @@ Map.prototype.marker = function (location, melacase) {
       function close(k, map) {
         return function() {
           if(map.m) {
-            map.m.setOptions({icon: "../img/marker_grey.png"});
+            map.m.setOptions({icon: "img/marker_grey.png"});
             map.m.info.close();
           }
-          showDetails(k);
-          m.setOptions({icon: "../img/marker_white.png"});
+          sideviewShowDetails(k);
+          m.setOptions({icon: "img/marker_white.png"});
           m.info.open(map.gmap,m);
           map.m = m;
         }

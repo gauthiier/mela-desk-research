@@ -50,6 +50,7 @@ function dataLoaded_cb(survey) {
   //TEMP
   showDetails(survey.cases[0]);
   sideviewEdit();
+  sideviewSendForm();
   
   $("#map_container").show();  
 }
