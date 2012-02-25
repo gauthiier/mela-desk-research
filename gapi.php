@@ -1,16 +1,12 @@
 <?php
 
 set_include_path("./lib");
-  
+require_once 'gapi_user.php';
 require_once 'Zend/Loader.php';
 Zend_Loader::loadClass('Zend_Gdata_Spreadsheets');
 Zend_Loader::loadClass('Zend_Gdata_Spreadsheets_DocumentQuery');
 Zend_Loader::loadClass('Zend_Gdata_Spreadsheets_ListQuery');
 Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
-
-// set credentials for ClientLogin authentication
-$user = "woodenboxmadeoutofplastic@gmail.com";
-$pass = "plasticisfantastic";
 
 try {
   $action = $_GET['action'];
