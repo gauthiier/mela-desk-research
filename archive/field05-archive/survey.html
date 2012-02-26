@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+  <script type="text/javascript" src="../js/jquery.js"></script>  
+  <script type="text/javascript" src="js/data.js"></script>
+  <script type="text/javascript" src="../js/data.js"></script>
+  <script type="text/javascript" src="js/main.js"></script>
+  <script type="text/javascript" src="../js/jsrender.js"></script>
+  <script type="text/javascript" src="js/clusters.js"></script>
+  <script type="text/javascript" src="../js/map.js"></script>
+  <script type="text/javascript" src="../js/sideview.js"></script>
+  <script type="text/javascript" src="../js/d3/d3.js"></script>
+  <link rel="stylesheet" type="text/css" href="../css/main.css" />
+	<link rel="stylesheet" type="text/css" href="../css/mela.css" />
+	<link href="http://wp1.mela-project.eu/mela/commons/styles/fonts.css" rel="stylesheet" type="text/css">	
+  <title>CIID MELA Survey visualization</title>
+</head>
+<body>
+  <div id="header">
+    <a href="http://mela-project.eu/"><img src="http://www.mela-project.eu/mela/commons/styles/img/main-logo.gif" id="melalogo"/></a>
+  </div>
+	<div id="field" class="wp05">
+		<a href="http://wp5.mela-project.eu/" id="wp05" title="Research Field 05">
+		    Field 05</a>		
+    <div id="menu">
+	    <a href="#map" id="map_link">Map</a> |
+			<a href="#clusters" id="clusters_link">Clusters</a> |	
+	    <a href="#survey" id="survey_link">Survey</a>
+    </div>		
+	</div>
+  <div id="map_container">
+    <div id="map_canvas"></div>
+  </div>
+  <div id="clusters">
+    <div class="content">
+     <div id="clusters_filters">
+       <h3 id="clusters_ox_label">X axis</h3>
+       <select id="clusters_ox"></select>
+       <br/><br/>
+       <h3 id="clusters_ox_label">Y axis</h3>
+       <select id="clusters_oy"></select>
+     </div>
+     <div id="clusters_graph">
+     </div>
+     <div id="clusters_list">
+     </div>
+    </div>            
+  </div>
+  <div id="survey_container">
+    <div id="survey">
+      <iframe src="https://spreadsheets.google.com/embeddedform?formkey=dHRRaHUwREgxTlJUR0d6V3QwbENnUGc6MA" width="650px" height="85%" frameborder="0" marginheight="0" marginwidth="0">Loading...</iframe>
+    </div>
+  </div>
+  <div id="sideview">
+  </div>
+</body>
+<script id="f05_details" type="text/x-jquery-tmpl">
+	<div class="caseDetails">
+		<h2>{{=name}}</h2>
+		<dl>
+		  <dt>Time stamp</dt>
+      <dd>{{=timestamp}}</dd>
+      <dt>Institution</dt>
+      <dd>{{=nameoftheinstitutionorganisation}}</dd>
+      <dt>Country</dt>
+      <dd>{{=country}}</dd>
+      <dt>City</dt>
+      <dd>{{=city}}</dd>
+      <dt>Type of institution</dt>
+      <dd>{{=typeofinstitutionorganisation}}</dd>
+      <dt>Links</dt>
+      <dd class="links">{{=links}}</dd>
+      <dt>Name</dt>
+      <dd>{{=name}}</dd>
+      <dt>Year</dt>
+      <dd>{{=year}}</dd>
+      <dt>Curator</dt>
+      <dd>{{=namecontactofcuratororganizer}}</dd>
+      <dt>Links 2</dt>
+      <dd class="links">{{=links_2}}</dd>
+      <dt>Description</dt>
+      <dd class="text">{{=description}}</dd>
+      <dt>Focus of technology</dt>
+      <dd>{{=focusoftechnology}}</dd>
+      <dt>Target group</dt>
+      <dd>{{=targetgroup}}</dd>
+      <dt>Why is it of interest?</dt>
+      <dd class="text">{{=whyisitofinterest}}</dd>
+      <dt>User perspective</dt>
+      <dd>{{=impactuserperspective}}</dd>
+      <dt>Institution perspective</dt>
+      <dd>{{=impactinstitutionorganisationperspective}}</dd>
+      <dt>Audience involvment</dt>
+      <dd class="number" data-column="audienceinvolvment">{{=audienceinvolvment}}</dd>
+      <dt>Audience engagement</dt>
+      <dd class="number" data-column="audienceengagement">{{=audienceengagement}}</dd>
+      <dt>Audience percpetion</dt>
+      <dd class="number" data-column="audienceperception">{{=audienceperception}}</dd>
+      <dt>Exhibition elements</dt>
+      <dd class="number" data-column="exhibitionelements">{{=exhibitionelements}}</dd>
+      <dt>Technology metaphor</dt>
+      <dd class="number" data-column="technologymetaphor">{{=technologymetaphor}}</dd>
+      <dt>Technology context</dt>
+      <dd class="number" data-column="technologycontext">{{=technologycontext}}</dd>
+      <dt>Identity construction</dt>
+      <dd class="number" data-column="identityconstruction">{{=identityconstruction}}</dd>
+      <dt>Representation</dt>
+      <dd class="number" data-column="representation">{{=representation}}</dd>
+      <dt>Historical perspective</dt>
+      <dd class="number" data-column="historicalperspective">{{=historicalperspective}}</dd>
+      <dt>Stance</dt>
+      <dd class="number" data-column="stance">{{=stance}}</dd>
+      <dt>Multinationalism</dt>
+      <dd class="number" data-column="multinationalism">{{=multinationalism}}</dd>
+      <dt>Affiliation</dt>
+      <dd>{{=affiliation}}</dd>
+    </dl>
+	</div>
+</script>
+<script id="caseListItem" type="text/x-jquery-tmpl">
+ 	<div class="caseDetails">
+ 		<dl>  		  
+       <dt>{{=name}}</dt>
+       <dd>{{=city}}</dd>        
+     </dl>
+ 	</div>
+ </script>
+</html>
