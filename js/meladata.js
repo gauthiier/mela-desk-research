@@ -7,7 +7,7 @@ function MelaSurvey(docID) {
 	this.fields = [];
 	this.cases = [];
 	this.id = docID;
-  this.headerRows = ["label", "section", "description", "type", "constraints"];
+  this.headerRows = ["label", "description", "type", "constraints"];
 }
 
 //first row of data in the survey table is labeling data (column name)

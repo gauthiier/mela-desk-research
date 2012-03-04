@@ -42,26 +42,26 @@ Map.prototype.displayCases = function(casesList) {
 	console.log('Loading map cases done.');
 }
 
-Map.prototype.marker_cb = function (melacase) {
+Map.prototype.marker_cb = function (melacase, open) {
   var geocoder = new google.maps.Geocoder();
-  var pos = geocoder.geocode({'address' : melacase.data.col_D + ' , '
-                                        + melacase.data.col_C
+  var pos = geocoder.geocode({'address' : melacase.data.col_F + ' , '
+                                        + melacase.data.col_E
                              },
                              function close(map, casedata) {
                                return function(res, status) {
                                     if(status == google.maps.GeocoderStatus.OK && res.length > 0) {
-                                        map.marker(res[0].geometry.location, casedata);
+                                        map.marker(res[0].geometry.location, casedata, open);
                                     }
                                 }
                              }(this, melacase));
 }
 
-Map.prototype.marker = function (location, melacase) {
+Map.prototype.marker = function (location, melacase, open) {
   var latlng = location;
   var m = new google.maps.Marker({
      position: latlng,
      map: this.gmap,
-     title: melacase.data.col_B,
+     title: melacase.data.col_D,
      draggable: false,
      icon: "img/" + melacase.survey.info.mapicon,
      originalicion: "img/" + melacase.survey.info.mapicon,
@@ -79,6 +79,9 @@ Map.prototype.marker = function (location, melacase) {
         sideviewList(melacase.survey, melacase);
       }
   );
+  if (open) {
+    self.showMarkerInfo(m, melacase);
+  }
   this.markers.push(m);
 }
 
@@ -97,11 +100,22 @@ Map.prototype.showMarkerInfo = function(m, melacase) {
   this.m = m;
 }
 
+Map.prototype.removeMarker = function(m) {
+  if(this.m == m) {
+    this.m.setOptions({icon: this.m.originalicion});
+    this.m.info.close();
+    this.m = null;
+  }
+  this.markers.splice(this.markers.indexOf(m), 1);
+  m.setMap(null);
+}
+
+
 Map.prototype.markerContent = function (melacase) {
   var content = '<div class="infowindow">';
-  content += '<div id="title">' + melacase.data.col_B + '</div>';
-  content += '<div id="place">' + melacase.data.col_B + '</div>';
-  content += '<div id="place">' + melacase.data.col_D + ', ' + melacase.data.col_C + '</div>';
+  content += '<div id="title">' + melacase.data.col_D + '</div>';
+  content += '<div id="place">' + melacase.data.col_D + '</div>';
+  content += '<div id="place">' + melacase.data.col_F + ', ' + melacase.data.col_E + '</div>';
   content += '</div>';
   return content;
 }

@@ -336,6 +336,31 @@ DateFieldBuilder.prototype.getValue = function() {
   return $("input[name='"+this.field.columnName+"']").val();
 }
 
+//--- EmptyFieldBuilder --------------------------------------------------------
+
+function EmptyFieldBuilder(field, data) {
+  this.field = field;
+  this.data = data;
+}
+
+EmptyFieldBuilder.prototype.toDisplayHtml = function() {
+  var html = "<h3>" + this.field.label + "</h3>";
+  return html;
+}
+
+EmptyFieldBuilder.prototype.toEditFormHtml = function() {
+  var html = "<h3>" + this.field.label + "</h3>";
+	html += "<dd>";
+  if (this.field.description) {
+    html += "<p>" + this.field.description + "</p>";
+  }
+  html += "</dd>";
+  return html;
+}
+
+EmptyFieldBuilder.prototype.getValue = function() {
+  return "";
+}
 
 
 
