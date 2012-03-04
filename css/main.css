@@ -326,7 +326,7 @@ h2 {
     text-align: left;
 }
 
-#list_container table{
+#list_container table {
     table-layout: fixed;
     width: 100%;
 }
@@ -342,6 +342,10 @@ h2 {
 
 .right {
   float: right;
+}
+
+h3 {
+  margin-top: 1.5em;
 }
 
 

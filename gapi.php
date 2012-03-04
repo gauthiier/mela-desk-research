@@ -1,7 +1,7 @@
 <?php
 
 set_include_path("./lib");
-require_once 'gapi_user.php';
+require_once 'gapiuser.php';
 require_once 'Zend/Loader.php';
 Zend_Loader::loadClass('Zend_Gdata_Spreadsheets');
 Zend_Loader::loadClass('Zend_Gdata_Spreadsheets_DocumentQuery');

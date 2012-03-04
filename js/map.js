@@ -62,7 +62,8 @@ Map.prototype.marker = function (location, melacase) {
      map: this.gmap,
      title: melacase.data.col_B,
      draggable: false,
-     icon: "img/" + melacase.survey.info.mapicon
+     icon: "img/" + melacase.survey.info.mapicon,
+     originalicion: "img/" + melacase.survey.info.mapicon
   });
   var c = this.markerContent(melacase);
   var info = new google.maps.InfoWindow({
@@ -73,7 +74,7 @@ Map.prototype.marker = function (location, melacase) {
       function close(k, map) {
         return function() {
           if(map.m) {
-            map.m.setOptions({icon: "img/marker_grey.png"});
+            map.m.setOptions({icon: map.m.originalicion});
             map.m.info.close();
           }
           sideviewShowDetails(k);

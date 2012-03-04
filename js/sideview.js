@@ -4,6 +4,7 @@ var sideviewCurrentSurvey = null;
 function sideviewGetFieldBuilder(field, data) {
   switch(field.type) {
     case "TEXTFIELD": return new TextFieldBuilder(field, data);
+    case "DATE": return new DateFieldBuilder(field, data);
     case "TEXTAREA": return new TextAreaFieldBuilder(field, data);
     case "RANGE": return new RangeFieldBuilder(field, data);
     case "LIST": return new ListFieldBuilder(field, data);
@@ -12,6 +13,10 @@ function sideviewGetFieldBuilder(field, data) {
     case "RADIO": return new RadioFieldBuilder(field, data);
     default: return new TextFieldBuilder(field, data);
   }
+}
+
+function sideviewList(survey) {
+  console.log(survey);
 }
 
 function sideviewShowDetails(melacase) {

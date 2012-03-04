@@ -53,6 +53,9 @@ function buildSurveyMenu(surveyInfo, survey) {
   addLink.click(function() {
     sideviewAdd(survey);
   })
+  casesLink.click(function() {
+    sideviewList(survey);
+  });
   field.append(menu);
   
   $("#fieldList").append(field);

@@ -303,6 +303,40 @@ RadioFieldBuilder.prototype.getValue = function() {
 }
 
 
+//--- DateFieldBuilder --------------------------------------------------------
+
+function DateFieldBuilder(field, data) {
+  this.field = field;
+  this.data = data;
+}
+
+DateFieldBuilder.prototype.toDisplayHtml = function() {
+  if (!this.data) return "";
+
+  var html = "";
+	html += "<dt>" + this.field.label + "</dt>";
+	html += "<dd>" + this.data + "</dd>";
+  return html;
+}
+
+DateFieldBuilder.prototype.toEditFormHtml = function() {
+  var html = "";
+	html += "<dt>" + this.field.label + "</dt>";
+	html += "<dd>";
+  if (this.field.description) {
+    html += "<p>" + this.field.description + "</p>";
+  }
+  var date = this.data || new Date();
+  html += "<input type='text' readonly='readonly' value='" + date + "' name='" + this.field.columnName + "'/>";
+  html += "</dd>";
+  return html;
+}
+
+DateFieldBuilder.prototype.getValue = function() {
+  return $("input[name='"+this.field.columnName+"']").val();
+}
+
+
 
 
 
