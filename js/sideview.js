@@ -199,15 +199,16 @@ function sideviewSendForm() {
     if (sideviewCurrentCase) {
       var marker = map.findMarkerForCase(sideviewCurrentCase);
       map.removeMarker(marker);
-      map.marker_cb(sideviewCurrentCase, true);
-      sideviewShowDetails(sideviewCurrentCase);
     }
     else if (newCase) {
       sideviewCurrentCase = newCase;
-      newCase.survey.cases.push(newCase);
-      sideviewList(newCase.survey, newCase);
-      sideviewShowDetails(newCase);
-      map.marker_cb(newCase, true);
+      sideviewCurrentCase.survey.cases.push(sideviewCurrentCase);
+    }
+
+    if (sideviewCurrentCase) {
+      sideviewList(sideviewCurrentCase.survey, sideviewCurrentCase);
+      sideviewShowDetails(sideviewCurrentCase);
+      map.marker_cb(sideviewCurrentCase, true);
     }
   }, "text")
 }
