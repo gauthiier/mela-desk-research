@@ -1,6 +1,16 @@
 var sideviewCurrentCase = null;
 var sideviewCurrentSurvey = null;
 
+String.prototype.format = function() {
+  var args = arguments;
+  return this.replace(/{(\d+)}/g, function(match, number) {
+    return typeof args[number] != 'undefined'
+      ? args[number]
+      : match
+    ;
+  });
+};
+
 function sideviewGetFieldBuilder(field, data) {
   switch(field.type) {
     case "TEXTFIELD": return new TextFieldBuilder(field, data);
@@ -15,12 +25,39 @@ function sideviewGetFieldBuilder(field, data) {
   }
 }
 
-function sideviewList(survey) {
-  console.log(survey);
+function sideviewList(survey, selectedMelacase, dontClear) {
+  if (dontClear == false || dontClear === undefined) $("#cases_list").empty();
+
+  //$("#cases_list").attr("class", ""); //remove all classes
+  //$("#cases_list").addClass(survey.info.cssClass);
+
+  function buildCaseHtml(melaCase) {
+    var cssClasses = (melaCase == selectedMelacase) ? "selected" : "";
+    cssClasses += " " + survey.info.cssClass;
+    var caseHtml = $("<div class='caseDetails {0}'><dl><dt>{1}</dt><dd>{2}</dd></dl></div>".format(cssClasses, melaCase.data.col_B, melaCase.data.col_D));
+    $("#cases_list").append(caseHtml);
+
+    caseHtml.click(function() {
+      $("#cases_list .selected").removeClass("selected")
+      caseHtml.addClass("selected");
+      sideviewShowDetails(melaCase);
+      var marker = map.findMarkerForCase(melaCase);
+      if (marker) {
+        map.showMarkerInfo(marker, melaCase);
+      }
+    })
+  }
+
+  for(var i=0; i<survey.cases.length; i++) {
+    var melaCase = survey.cases[i];
+    buildCaseHtml(melaCase);
+  }
 }
 
 function sideviewShowDetails(melacase) {
 	sideviewCurrentCase = melacase;
+  //$("#details").show();
+  //$("#cases_list").hide();
   if (!melacase) {
     $("#sideview #details").html("");
     return;
@@ -50,6 +87,9 @@ function sideviewShowDetails(melacase) {
 
 
 function sideviewEdit() {
+  //$("#details").show();
+  //$("#cases_list").hide();
+
 	var melacase = sideviewCurrentCase;
 
 	var inline = "";
@@ -76,6 +116,9 @@ function sideviewEdit() {
 }
 
 function sideviewAdd(survey) {
+  //$("#details").show();
+  //$("#cases_list").hide();
+
   sideviewCurrentCase = null;
   sideviewCurrentSurvey = survey;
 
@@ -115,14 +158,26 @@ function sideviewSendForm() {
   }
   var data = {};
 
+  var newCase = null;
+
+  if (!sideviewCurrentCase) {
+    newCase = new MelaCase(sideviewCurrentSurvey);
+  }
+
   for(var i=0; i<survey.columns.length; i++) {
     console.log(field);
     var field = survey.fields[survey.columns[i]];
     var fieldBuilder = sideviewGetFieldBuilder(field, null);
     var value = fieldBuilder.getValue() || "";
 
-    if (sideviewCurrentCase)
+    if (sideviewCurrentCase) {
       sideviewCurrentCase.data[field.col] = value;
+      sideviewCurrentCase.data[survey.columns[i]] = value;
+    }
+    if (newCase) {
+      newCase.data[field.col] = value;
+      newCase.data[survey.columns[i]] = value;
+    }
 
     data[field.columnName] = value;
   }
@@ -138,48 +193,9 @@ function sideviewSendForm() {
     if (response.indexOf("ERROR") !== -1) {
       alert("ERROR!");
     }
-    console.log("response", response);
+    if (newCase) {
+      sideviewCurrentCase = newCase;
+    }
     sideviewCloseEdit();
   }, "text")
 }
-
-  //TODO: what is this doing?
-  // if(typeof(melacase.survey.emitdetails) === 'undefined' || !melacase.survey.emitdetails) {
-  //     details = $($("#" + melacase.survey.detailsdiv).render(melacase));
-  //   $("#sideview").html(details);
-  // } else if(typeof(melacase.survey.emitdetails) != 'undefined' && melacase.survey.emitdetails) {
-  //   details = emitDetails(melacase);
-  //   $("#sideview").html(details);
-  // }
-
-  // //adds bar representing the value next to the value number
-  // details.find(".number").each(function() {
-  //   var field = $(this);
-  //   var value = Number(field.text());
-  //   if (isNaN(value)) value = 0;
-  //
-  //   var columnName = field.attr("data-column");
-  //   var labels = columnLabels[columnName];
-  //
-  //   field.html(
-  //     "<div class='barContainer'>" +
-  //     "<div class='low'>"+labels[0]+"</div>" +
-  //     "<div class='hi'>"+labels[1]+"</div>" +
-  //     "<div class='value' style='left:" + (value * 20 + 1) + "%'>"+value+"</div>" +
-  //     "<div class='bar'>" +
-  //     "<div class='barvalue' style='width:" + (value * 20) + "%'></div>" +
-  //     "</div>"+
-  //     "</div>"
-  //   )
-  // })
-  //
-  // //converts text links to html <a href>
-  // details.find(".links").each(function() {
-  //   var field = $(this);
-  //   var links = field.text().split(/[ \n]/);
-  //   var html = "";
-  //   $(links).each(function() {
-  //     html += "<a href='" + this + "'>" + this + "</a>\n";
-  //   });
-  //   field.html(html);
-  // });

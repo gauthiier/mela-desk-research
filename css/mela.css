@@ -22,6 +22,41 @@ font-family: RockwellBold;
 .wp10 { background-color: #c6c6c6; }
 .wpnone { background-color: #c6c6c6; }
 
+.wp01 dt { color: #46a12a; }
+.wp02 dt { color: #8ebc11; }
+.wp03 dt { color: #fed61e; }
+.wp04 dt { color: #f39404; }
+.wp05 dt { color: #eb6909; }
+.wp06 dt { color: #e3001b; }
+.wp07 dt { color: #861237; }
+.wp08 dt { color: #562380; }
+.wp09 dt { color: #c6c6c6; }
+.wp10 dt { color: #c6c6c6; }
+
+.wp01 dl:hover, .wp01.selected dl { background-color: #46a12a; }
+.wp02 dl:hover, .wp02.selected dl { background-color: #8ebc11; }
+.wp03 dl:hover, .wp03.selected dl { background-color: #fed61e; }
+.wp04 dl:hover, .wp04.selected dl { background-color: #f39404; }
+.wp05 dl:hover, .wp05.selected dl { background-color: #eb6909; }
+.wp06 dl:hover, .wp06.selected dl { background-color: #e3001b; }
+.wp07 dl:hover, .wp07.selected dl { background-color: #861237; }
+.wp08 dl:hover, .wp08.selected dl { background-color: #562380; }
+.wp09 dl:hover, .wp09.selected dl { background-color: #c6c6c6; }
+.wp10 dl:hover, .wp10.selected dl { background-color: #c6c6c6; }
+
+.wp01 dl:hover dt, .wp01.selected dl dt { color: #FFF; }
+.wp02 dl:hover dt, .wp02.selected dl dt { color: #FFF; }
+.wp03 dl:hover dt, .wp03.selected dl dt { color: #FFF; }
+.wp04 dl:hover dt, .wp04.selected dl dt { color: #FFF; }
+.wp05 dl:hover dt, .wp05.selected dl dt { color: #FFF; }
+.wp06 dl:hover dt, .wp06.selected dl dt { color: #FFF; }
+.wp07 dl:hover dt, .wp07.selected dl dt { color: #FFF; }
+.wp08 dl:hover dt, .wp08.selected dl dt { color: #FFF; }
+.wp09 dl:hover dt, .wp09.selected dl dt { color: #FFF; }
+.wp10 dl:hover dt, .wp10.selected dl dt { color: #FFF; }
+
+
+
 #wp001 { background-color: #46a12a; }
 #wp002 { background-color: #8ebc11; }
 #wp003 { background-color: #fed61e; }
