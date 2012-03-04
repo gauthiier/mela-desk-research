@@ -88,9 +88,11 @@ function sideviewEdit() {
 	var melacase = sideviewCurrentCase;
 
 	var inline = "";
+  inline += "<div class='formLinks'>"
   inline += "<a href='javascript:sideviewSendForm();' class='buttonLink'>Update</a>";
   inline += " &nbsp; ";
   inline += "<a href='javascript:sideviewCloseEdit();' class=''>Cancel</a>";
+  inline += "</div>"
 	inline += "<h2>" + melacase.data.col_D + "</h2>";
 	inline += "<dl>";
   for(var i=0; i<melacase.survey.columns.length; i++) {
@@ -120,9 +122,11 @@ function sideviewAdd(survey) {
   console.log(sideviewCurrentSurvey);
 
 	var inline = "";
-  inline += "<a href='javascript:sideviewSendForm();' class='buttonLink'>Send</a>";
+  inline += "<div class='formLinks'>"
+  inline += "<a href='javascript:sideviewSendForm();' class='buttonLink'>Add</a>";
   inline += " &nbsp; ";
   inline += "<a href='javascript:sideviewCloseEdit();' class=''>Cancel</a>";
+  inline += "</div>"
 	inline += "<dl>";
   for(var i=0; i<survey.columns.length; i++) {
     var columnId = survey.columns[i];
@@ -185,8 +189,9 @@ function sideviewSendForm() {
     data: data,
     action: sideviewCurrentCase ? "update" : "add"
   }
-  $.get("gapi.php", cellUpdateData, function(response) {
 
+  $(".formLinks").html("<img src='img/loader.gif' /> Sending... ");
+  $.get("gapi.php", cellUpdateData, function(response) {
     if (response.indexOf("ERROR") !== -1) {
       alert("ERROR!");
       sideviewCloseEdit();

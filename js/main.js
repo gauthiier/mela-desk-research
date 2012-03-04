@@ -65,7 +65,10 @@ function buildSurveyMenu(surveyInfo, survey) {
 }
 
 function loadSurvey(i) {
-  if (i >= melaSurveys.length) return;
+  if (i >= melaSurveys.length) {
+    $("#loader").hide();
+    return;
+  }
   //console.log(i)
   var surveyInfo = melaSurveys[i];
 

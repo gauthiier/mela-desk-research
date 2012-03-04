@@ -356,5 +356,11 @@ h3 {
   margin-top: 1.5em;
 }
 
+#loader {
+  position: absolute;
+  top: 5px;
+  right: 20px;
+}
+
 
 
