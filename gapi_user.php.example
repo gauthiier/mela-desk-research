@@ -1,0 +1,5 @@
+<?php
+// set credentials for ClientLogin authentication
+$user = "user@gmail.com";
+$pass = "password";
+?>
