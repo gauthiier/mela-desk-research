@@ -28,7 +28,7 @@ function Map() {
 
 }
 
-var timeout = 700;
+var timeout = 1700;
 Map.prototype.displayCases = function(casesList) {
   console.log('Loading map cases...');
   var who = this;
@@ -44,8 +44,8 @@ Map.prototype.displayCases = function(casesList) {
 
 Map.prototype.marker_cb = function (melacase, open) {
   var geocoder = new google.maps.Geocoder();
-  var pos = geocoder.geocode({'address' : melacase.data.col_F + ' , '
-                                        + melacase.data.col_E
+  var pos = geocoder.geocode({'address' : melacase.data.col_G + ' , '
+                                        + melacase.data.col_F
                              },
                              function close(map, casedata) {
                                return function(res, status) {
@@ -61,7 +61,7 @@ Map.prototype.marker = function (location, melacase, open) {
   var m = new google.maps.Marker({
      position: latlng,
      map: this.gmap,
-     title: melacase.data.col_D,
+     title: melacase.data.col_E,
      draggable: false,
      icon: "img/" + melacase.survey.info.mapicon,
      originalicion: "img/" + melacase.survey.info.mapicon,
@@ -101,6 +101,8 @@ Map.prototype.showMarkerInfo = function(m, melacase) {
 }
 
 Map.prototype.removeMarker = function(m) {
+  if (!m) return;
+
   if(this.m == m) {
     this.m.setOptions({icon: this.m.originalicion});
     this.m.info.close();
@@ -113,16 +115,16 @@ Map.prototype.removeMarker = function(m) {
 
 Map.prototype.markerContent = function (melacase) {
   var content = '<div class="infowindow">';
-  content += '<div id="title">' + melacase.data.col_D + '</div>';
-  content += '<div id="place">' + melacase.data.col_D + '</div>';
-  content += '<div id="place">' + melacase.data.col_F + ', ' + melacase.data.col_E + '</div>';
+  content += '<div id="title">' + melacase.data.col_E + '</div>';
+  content += '<div id="place">' + melacase.data.col_E + '</div>';
+  content += '<div id="place">' + melacase.data.col_G + ', ' + melacase.data.col_F + '</div>';
   content += '</div>';
   return content;
 }
 
 Map.prototype.resize = function() {
   var sideviewW = $("#sideview").width();
-  var casesListW = $("#cases_list").width();
+  var casesListW = ($("#cases_list:visible").size() > 0) ? $("#cases_list").width() : 0;
   var windowW = $(window).width();
   $("#map_container").css("width", (windowW - sideviewW - casesListW - 2) + "px");
   google.maps.event.trigger(this.gmap, 'resize');

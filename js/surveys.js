@@ -1,3 +1,4 @@
+var surveys = [];
 var melaSurveys = [];
 
 melaSurveys.push({

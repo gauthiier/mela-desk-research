@@ -229,6 +229,16 @@ h2 {
   background: #FAFAFA;
 }
 
+#cases_list input {
+  padding: 0.25em;
+  width: 100%;
+}
+
+#cases_list label {
+  padding: 0.25em;
+  display: block;
+}
+
 #cases_list dl {
 	border-bottom: 1px solid #AAAAAA;
 	display: block;

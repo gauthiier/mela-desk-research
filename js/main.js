@@ -37,6 +37,7 @@ function init() {
   })
 
   loadSurveys();
+  sideviewInitSearch();
 }
 
 function buildSurveyMenu(surveyInfo, survey) {
@@ -75,6 +76,7 @@ function loadSurvey(i) {
   console.log("Loading", surveyInfo.ssid);
   loadData(surveyInfo.ssid, function(survey) {
     survey.info = surveyInfo;
+    surveys.push(survey);
     console.log("Loaded", surveyInfo.ssid);
     console.log("Number of loaded cases: " + survey.cases.length);
 

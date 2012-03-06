@@ -57,7 +57,7 @@ TextAreaFieldBuilder.prototype.toEditFormHtml = function() {
   if (this.field.description) {
     html += "<p>" + this.field.description + "</p>";
   }
-  html += "<textarea rows='5' cols='50' name='" + this.field.columnName + "'>" + this.data + "</textarea>";
+  html += "<textarea rows='15' cols='85' name='" + this.field.columnName + "'>" + this.data + "</textarea>";
   html += "</dd>";
   return html;
 }
@@ -227,15 +227,24 @@ CheckboxFieldBuilder.prototype.toEditFormHtml = function() {
     html += "<p>" + this.field.description + "</p>";
   }
   html += "<ul>";
-  var everChecked = false;
+  var checkedCount = 0;
   for(var i=0; i<this.options.length; i++) {
-    var checked = (this.selectedOptions.indexOf(this.options[i]) > -1) ? "checked='checked'" : "";
-    everChecked = everChecked || checked.length > 0;
+    var checked = "";
+    if (this.selectedOptions.indexOf(this.options[i]) > -1) {
+      checked = "checked='checked'";
+      checkedCount++;
+    }
+
     var needsInput = (i == this.options.length-1 && this.options[i].charAt(this.options[i].length-1) == ":");
     var inputValue = "";
-    if (needsInput && !everChecked) {
-      checked = "checked='checked'";
+    if (needsInput && checkedCount < this.selectedOptions.length) {
       inputValue = this.selectedOptions[this.selectedOptions.length-1];
+      if (inputValue) {
+        checked = "checked='checked'";
+      }
+      else {
+        inputValue = "";
+      }
     }
     var textInput = needsInput ? " <input type='text' value='" + inputValue + "'/>" : "";
     html += "<li><input type='checkbox' value='" + this.options[i] + "'" + checked +" name='" + this.field.columnName + "'/> " + this.options[i] + textInput + "</option></li>";
@@ -247,7 +256,16 @@ CheckboxFieldBuilder.prototype.toEditFormHtml = function() {
 
 CheckboxFieldBuilder.prototype.getValue = function() {
   var values = [];
-  $("input[name='"+this.field.columnName+"']:checked").each(function() { if ($(this).is(':checked')) values.push($(this).val()); });
+  $("input[name='"+this.field.columnName+"']:checked").each(function() {
+    if ($(this).is(':checked')) {
+      if ($(this).parent().children().last().attr("type") == "text") {
+        values.push($(this).parent().children().last().val());
+      }
+      else {
+        values.push($(this).val());
+      }
+    }
+  });
   return values.join("|");
 }
 
@@ -287,8 +305,13 @@ RadioFieldBuilder.prototype.toEditFormHtml = function() {
     var needsInput = (i == this.options.length-1 && this.options[i].charAt(this.options[i].length-1) == ":");
     var inputValue = "";
     if (needsInput && !everChecked) {
-      checked = "checked='checked'";
       inputValue = this.selectedOptions[this.selectedOptions.length-1];
+      if (inputValue) {
+        checked = "checked='checked'";
+      }
+      else {
+        inputValue = "";
+      }
     }
     var textInput = needsInput ? " <input type='text' value='" + inputValue + "'/>" : "";
     html += "<li><input type='radio' value='" + this.options[i] + "'" + checked + " name='" + this.field.columnName + "'/> " + this.options[i] + textInput + "</option></li>";
@@ -299,7 +322,16 @@ RadioFieldBuilder.prototype.toEditFormHtml = function() {
 }
 
 RadioFieldBuilder.prototype.getValue = function() {
-  return $("input[name='"+this.field.columnName+"']:checked").val();
+  var checkedFields = $("input[name='"+this.field.columnName+"']:checked");
+  if (checkedFields.size() == 0) return "";
+  var checkedField = checkedFields.get(0);
+
+  if ($(checkedField).parent().children().last().attr("type") == "text") {
+     return $(checkedField).parent().children().last().val();
+  }
+  else {
+    return $(checkedField).val();
+  }
 }
 
 
@@ -333,6 +365,39 @@ DateFieldBuilder.prototype.toEditFormHtml = function() {
 }
 
 DateFieldBuilder.prototype.getValue = function() {
+  return $("input[name='"+this.field.columnName+"']").val();
+}
+
+//--- IDFieldBuilder --------------------------------------------------------
+
+function IDFieldBuilder(field, data) {
+  this.field = field;
+  this.data = data;
+}
+
+IDFieldBuilder.prototype.toDisplayHtml = function() {
+  if (!this.data) return "";
+
+  var html = "";
+	html += "<dt>" + this.field.label + "</dt>";
+	html += "<dd>" + this.data + "</dd>";
+  return html;
+}
+
+IDFieldBuilder.prototype.toEditFormHtml = function() {
+  var html = "";
+	html += "<dt>" + this.field.label + "</dt>";
+	html += "<dd>";
+  if (this.field.description) {
+    html += "<p>" + this.field.description + "</p>";
+  }
+  var id = this.data || ((new Date()).getTime() + "." + Math.floor((Math.random()*10000)));
+  html += "<input type='text' readonly='readonly' value='" + id + "' name='" + this.field.columnName + "'/>";
+  html += "</dd>";
+  return html;
+}
+
+IDFieldBuilder.prototype.getValue = function() {
   return $("input[name='"+this.field.columnName+"']").val();
 }
 

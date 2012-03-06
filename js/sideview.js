@@ -11,6 +11,33 @@ String.prototype.format = function() {
   });
 };
 
+function sideviewInitSearch() {
+  var input = $("#cases_list input[type='text']");
+  input.bind("keydown", function() {
+    var searchPhrase = input.val().toLowerCase();
+    if (searchPhrase.length == 0) return;
+
+    var cases = [];
+    for(var i=0; i<surveys.length; i++) {
+      if (!surveys[i].cases) continue;
+      for(var j=0; j<surveys[i].cases.length; j++) {
+        var melaCase = surveys[i].cases[j];
+        for(var d in melaCase.data) {
+          var data = melaCase.data[d];
+          if (!data) {
+            continue;
+          }
+          var dataStr = (""+data).toLowerCase();
+          if (dataStr.indexOf(searchPhrase) > -1) {
+            cases.push(melaCase);
+          }
+        }
+      }
+    }
+    sideviewListCases(cases);
+  });
+}
+
 function sideviewGetFieldBuilder(field, data) {
   switch(field.type) {
     case "TEXTFIELD": return new TextFieldBuilder(field, data);
@@ -21,36 +48,48 @@ function sideviewGetFieldBuilder(field, data) {
     case "COUNTRYLIST": return new CountryListFieldBuilder(field, data);
     case "CHECKBOX": return new CheckboxFieldBuilder(field, data);
     case "RADIO": return new RadioFieldBuilder(field, data);
+    case "ID": return new IDFieldBuilder(field, data);
     default: return new EmptyFieldBuilder(field, data);
   }
 }
 
+function sideviewBuildCaseHtml(melaCase, selectedMelacase) {
+  var cssClasses = (melaCase == selectedMelacase) ? "selected" : "";
+  cssClasses += " " + melaCase.survey.info.cssClass;
+  var caseHtml = $("<div class='caseDetails {0}'><dl><dt>{1}</dt><dd>{2}</dd></dl></div>".format(cssClasses, melaCase.data.col_E, melaCase.data.col_G));
+  $("#cases_list").append(caseHtml);
+
+  caseHtml.click(function() {
+    $("#cases_list .selected").removeClass("selected")
+    caseHtml.addClass("selected");
+    sideviewShowDetails(melaCase);
+    var marker = map.findMarkerForCase(melaCase);
+    if (marker) {
+      map.showMarkerInfo(marker, melaCase);
+    }
+  })
+}
+
 function sideviewList(survey, selectedMelacase, dontClear) {
-  if (dontClear == false || dontClear === undefined) $("#cases_list").empty();
+  sideviewCollapse();
+
+  if (dontClear == false || dontClear === undefined) $("#cases_list dl").remove();
 
   //$("#cases_list").attr("class", ""); //remove all classes
   //$("#cases_list").addClass(survey.info.cssClass);
 
-  function buildCaseHtml(melaCase) {
-    var cssClasses = (melaCase == selectedMelacase) ? "selected" : "";
-    cssClasses += " " + survey.info.cssClass;
-    var caseHtml = $("<div class='caseDetails {0}'><dl><dt>{1}</dt><dd>{2}</dd></dl></div>".format(cssClasses, melaCase.data.col_D, melaCase.data.col_F));
-    $("#cases_list").append(caseHtml);
-
-    caseHtml.click(function() {
-      $("#cases_list .selected").removeClass("selected")
-      caseHtml.addClass("selected");
-      sideviewShowDetails(melaCase);
-      var marker = map.findMarkerForCase(melaCase);
-      if (marker) {
-        map.showMarkerInfo(marker, melaCase);
-      }
-    })
-  }
-
   for(var i=0; i<survey.cases.length; i++) {
     var melaCase = survey.cases[i];
-    buildCaseHtml(melaCase);
+    sideviewBuildCaseHtml(melaCase, selectedMelacase);
+  }
+
+  map.resize();
+}
+
+function sideviewListCases(cases) {
+  $("#cases_list dl").remove();
+  for(var i=0; i<cases.length; i++) {
+    sideviewBuildCaseHtml(cases[i], null);
   }
 }
 
@@ -66,7 +105,7 @@ function sideviewShowDetails(melacase) {
 	var inline = "";
 
   inline += "<a href='javascript:sideviewEdit();'>Edit</a>";
-	inline += "<h2>" + melacase.data.col_D + "</h2>";
+	inline += "<h2>" + melacase.data.col_E + "</h2>";
 	inline += "<dl>";
   for(var i=0; i<melacase.survey.columns.length; i++) {
     var columnId = melacase.survey.columns[i];
@@ -80,10 +119,35 @@ function sideviewShowDetails(melacase) {
 	$("#sideview #details").html(inline);
 }
 
+function sideviewDelete() {
+  if (sideviewCurrentCase == null) return;
+
+  var yes = confirm("Are you sure to delete : " + sideviewCurrentCase.data.col_E + "?");
+  if (yes) {
+    var c = sideviewCurrentCase;
+    var marker = map.findMarkerForCase(c);
+    map.removeMarker(marker);
+    c.survey.cases.splice(c.survey.cases.indexOf(c), 1);
+    sideviewCurrentCase = null;
+
+
+    var cellUpdateData = {
+      spreadsheet: c.survey.id,
+      data: {id:c.data.col_A},
+      action: "delete"
+    }
+
+    $(".formLinks").html("<img src='img/loader.gif' /> Deleting... ");
+    $.get("gapi.php", cellUpdateData, function(response) {
+      console.log(response);
+      sideviewList(c.survey);
+      sideviewCloseEdit();
+    });
+  }
+}
 
 function sideviewEdit() {
-  //$("#details").show();
-  //$("#cases_list").hide();
+  sideviewExpand();
 
 	var melacase = sideviewCurrentCase;
 
@@ -92,8 +156,9 @@ function sideviewEdit() {
   inline += "<a href='javascript:sideviewSendForm();' class='buttonLink'>Update</a>";
   inline += " &nbsp; ";
   inline += "<a href='javascript:sideviewCloseEdit();' class=''>Cancel</a>";
+  inline += "<a href='javascript:sideviewDelete();' class='buttonLink right'>Delete</a>";
   inline += "</div>"
-	inline += "<h2>" + melacase.data.col_D + "</h2>";
+	inline += "<h2>" + melacase.data.col_E + "</h2>";
 	inline += "<dl>";
   for(var i=0; i<melacase.survey.columns.length; i++) {
     var columnId = melacase.survey.columns[i];
@@ -112,9 +177,28 @@ function sideviewEdit() {
 	$("#sideview #details").html(inline);
 }
 
+function sideviewExpand() {
+  $("#cases_list").hide();
+  $("#sideview").css("width", "50%");
+  setTimeout(function() {
+      map.resize();
+  }, 10);
+
+}
+
+function sideviewCollapse() {
+  $("#cases_list").show();
+  $("#sideview").css("width", "35%");
+  setTimeout(function() {
+      map.resize();
+  }, 10);
+
+
+}
+
+
 function sideviewAdd(survey) {
-  //$("#details").show();
-  //$("#cases_list").hide();
+  sideviewExpand();
 
   sideviewCurrentCase = null;
   sideviewCurrentSurvey = survey;
@@ -148,6 +232,7 @@ function sideviewAdd(survey) {
 function sideviewCloseEdit() {
   var melacase = sideviewCurrentCase;
   sideviewShowDetails(melacase);
+  sideviewCollapse();
 }
 
 function sideviewSendForm() {
@@ -185,13 +270,13 @@ function sideviewSendForm() {
   //console.log(sideviewCurrentCase);
   var cellUpdateData = {
     spreadsheet: survey.id,
-    row: sideviewCurrentCase ? sideviewCurrentCase.row : null,
     data: data,
     action: sideviewCurrentCase ? "update" : "add"
   }
 
   $(".formLinks").html("<img src='img/loader.gif' /> Sending... ");
   $.get("gapi.php", cellUpdateData, function(response) {
+    console.log(response);
     if (response.indexOf("ERROR") !== -1) {
       alert("ERROR!");
       sideviewCloseEdit();
