@@ -57,7 +57,7 @@ TextAreaFieldBuilder.prototype.toEditFormHtml = function() {
   if (this.field.description) {
     html += "<p>" + this.field.description + "</p>";
   }
-  html += "<textarea rows='15' cols='85' name='" + this.field.columnName + "'>" + this.data + "</textarea>";
+  html += "<textarea rows='15' style='width:99%' name='" + this.field.columnName + "'>" + this.data + "</textarea>";
   html += "</dd>";
   return html;
 }

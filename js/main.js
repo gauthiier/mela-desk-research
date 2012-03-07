@@ -51,9 +51,9 @@ function buildSurveyMenu(surveyInfo, survey) {
   menu.append(casesLink);
   menu.append(" | ")
   menu.append(addLink);
-  addLink.click(function() {
-    sideviewAdd(survey);
+  addLink.click(function() {    
     sideviewList(survey);
+    sideviewAdd(survey);
     map.showMarkerInfo(null, null);
   })
   casesLink.click(function() {
