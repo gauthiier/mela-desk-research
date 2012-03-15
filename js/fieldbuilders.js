@@ -228,6 +228,8 @@ CheckboxFieldBuilder.prototype.toEditFormHtml = function() {
   }
   html += "<ul>";
   var checkedCount = 0;
+  var totalLength = 0;
+  var avgLength = 0;
   for(var i=0; i<this.options.length; i++) {
     var checked = "";
     if (this.selectedOptions.indexOf(this.options[i]) > -1) {
@@ -246,7 +248,10 @@ CheckboxFieldBuilder.prototype.toEditFormHtml = function() {
         inputValue = "";
       }
     }
-    var textInput = needsInput ? " <input type='text' value='" + inputValue + "'/>" : "";
+    totalLength += this.options[i].length;
+    avgLength = Math.floor(Math.max(20, Math.min(totalLength/i, 60)));
+
+    var textInput = needsInput ? " <input type='text' value='" + inputValue + "' size='" + avgLength + "'/>" : "";
     html += "<li><input type='checkbox' value='" + this.options[i] + "'" + checked +" name='" + this.field.columnName + "'/> " + this.options[i] + textInput + "</option></li>";
   }
   html += "</ul>";
@@ -299,6 +304,8 @@ RadioFieldBuilder.prototype.toEditFormHtml = function() {
   }
   html += "<ul>";
   var everChecked = false;
+  var totalLength = 0;
+  var avgLength = 0;
   for(var i=0; i<this.options.length; i++) {
     var checked = (this.selectedOptions.indexOf(this.options[i]) > -1) ? "checked='checked'" : "";
     everChecked = everChecked || checked.length > 0;
@@ -313,7 +320,9 @@ RadioFieldBuilder.prototype.toEditFormHtml = function() {
         inputValue = "";
       }
     }
-    var textInput = needsInput ? " <input type='text' value='" + inputValue + "'/>" : "";
+    totalLength += this.options[i].length;
+    avgLength = Math.floor(Math.max(20, Math.min(totalLength/i, 60)));
+    var textInput = needsInput ? " <input type='text' value='" + inputValue + "' size='" + avgLength + "'/>" : "";
     html += "<li><input type='radio' value='" + this.options[i] + "'" + checked + " name='" + this.field.columnName + "'/> " + this.options[i] + textInput + "</option></li>";
   }
   html += "</ul>";
