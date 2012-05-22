@@ -143,7 +143,7 @@ function sideviewDelete() {
     }
 
     $(".formLinks").html("<img src='img/loader.gif' /> Deleting... ");
-    $.get("gapi.php", cellUpdateData, function(response) {
+    $.post("gapi.php", cellUpdateData, function(response) {
       console.log(response);
       sideviewList(c.survey);
       sideviewCloseEdit();
@@ -280,7 +280,7 @@ function sideviewSendForm() {
   }
 
   $(".formLinks").html("<img src='img/loader.gif' /> Sending... ");
-  $.get("gapi.php", cellUpdateData, function(response) {
+  $.post("gapi.php", cellUpdateData, function(response) {
     console.log(response);
     if (response.indexOf("ERROR") !== -1) {
       alert("ERROR!");

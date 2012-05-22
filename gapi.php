@@ -9,7 +9,7 @@ Zend_Loader::loadClass('Zend_Gdata_Spreadsheets_ListQuery');
 Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
 
 try {
-  $action = $_GET['action'];
+  $action = $_POST['action'];
 
   // connect to API
   $service = Zend_Gdata_Spreadsheets::AUTH_SERVICE_NAME;
@@ -18,17 +18,17 @@ try {
 
   //find out what's the id of the first worksheet
   $query = new Zend_Gdata_Spreadsheets_DocumentQuery();
-  $query->setSpreadsheetKey($_GET['spreadsheet']);
+  $query->setSpreadsheetKey($_POST['spreadsheet']);
   $feed = $service->getWorksheetFeed($query);
   $currWkshtId = explode('/', $feed->entries[0]->id->text);
   $firstWorksheet = $currWkshtId[8];
 
   // set target spreadsheet and worksheet
-  $ssKey = $_GET['spreadsheet'];
+  $ssKey = $_POST['spreadsheet'];
   $wsKey = $firstWorksheet;
 
   // create row content
-  $rowData = $_GET['data'];
+  $rowData = $_POST['data'];
 
   if ($action == "add") {
     $entryResult = $service->insertRow($rowData, $ssKey, $wsKey);
