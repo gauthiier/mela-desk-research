@@ -63,7 +63,7 @@ TextAreaFieldBuilder.prototype.toEditFormHtml = function() {
 }
 
 TextAreaFieldBuilder.prototype.getValue = function() {
-  return $("input[name='"+this.field.columnName+"']").val();
+  return $("textarea[name='"+this.field.columnName+"']").val();
 }
 
 //--- RangeFieldBuilder ------------------------------------------------------------
@@ -215,7 +215,7 @@ CheckboxFieldBuilder.prototype.toDisplayHtml = function() {
 
   var html = "";
 	html += "<dt>" + this.field.label + "</dt>";
-	html += "<dd>" + this.data + "</dd>";
+	html += "<dd>- " + this.data.split("|").join("<br/>- ") + "</dd>";
   return html;
 }
 

@@ -28,4 +28,14 @@ melaSurveys.push({
   mapicon: "marker_wp05.png"
 })
 
+melaSurveys.push({
+  title: "MELA Research Field06 Survey",
+  shortTitle: "Field06",
+  link: "http://wp6.mela-project.eu/",
+  cssClass: "wp06",
+  ssid: "0AjuoKdtx8dI_dHY2X1JNUlc1V0lWM1Fkd2d5MTVFY3c",
+  mapicon: "marker_wp06.png"
+})
+
+
 

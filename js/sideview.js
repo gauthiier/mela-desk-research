@@ -112,7 +112,12 @@ function sideviewShowDetails(melacase) {
     var field = melacase.survey.fields[columnId];
     var data = melacase.data[columnId] || "";
     var fieldBuilder = sideviewGetFieldBuilder(field, data);
-    inline += fieldBuilder.toDisplayHtml();
+    var html = fieldBuilder.toDisplayHtml();
+    if (!html) {
+      html += "<dt>" + field.label + "</dt>";
+      html += "<dd>&nbsp;</dd>";
+    }
+    inline += html;
 	}
 	inline += "</dl>";
 

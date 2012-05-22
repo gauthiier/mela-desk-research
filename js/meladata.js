@@ -1,5 +1,17 @@
 //-- data model ----------------------------------------------------------------
 
+//HELLO IE!
+if(!Array.indexOf){
+  Array.prototype.indexOf = function(obj){
+    for(var i=0; i<this.length; i++){
+      if(this[i]==obj) {
+        return i;
+      }
+    }
+    return -1;
+  }
+}
+
 // MelaSurvey -> global data for a given survey
 function MelaSurvey(docID) {
   this.columns = [];
