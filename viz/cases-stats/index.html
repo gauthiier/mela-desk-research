@@ -1,0 +1,431 @@
+<html>
+<head>
+<title>MeLa Cases</title>
+<meta name = "viewport" content = "initial-scale = 1.0">
+<style type="text/css">
+
+@font-face { font-family: Abel; src: url('fonts/Abel/Abel-Regular.ttf'); }
+@font-face { font-family: Marvel; font-weight: bold; src: url('fonts/Marvel/Marvel-Bold.ttf'); }
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Marvel, sans-serif;
+  margin: 1em;
+}
+
+p {
+  font-family: Abel, sans-serif;
+}
+
+h2.section {
+  font-size: 350%;
+  border-bottom: 1px solid #DDDDDD;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
+
+#charts {
+  margin-top: 2em;
+}
+
+#charts svg {
+  margin-right: 1em;
+  margin-bottom: 2em;
+}
+
+text.label {
+  font-size: 90%;
+  text-anchor: end;
+}
+
+text.value {
+  font-size: 90%;
+  text-anchor: start;
+}
+
+text.title {
+  font-size: 180%;
+  text-anchor: start;
+}
+
+text.tooltip {
+  font-size: 80%;
+}
+
+</style>
+<script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
+<script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
+<script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
+<script type="text/javascript">
+
+window.onload = function() {
+  d3.text("data/field05.csv", function(dataStr) {
+    var data = CSVToArray(dataStr);
+
+    var info = [];
+    info.push("Field05 : " + data.length + " cases");
+
+    //build list of all fields and their types
+    var fieldNames = data[0];
+    var fieldTypes = data[2];
+    var fieldValues = data[3];
+    var fields = [];
+    for(var i in fieldNames) {
+      if (fieldTypes[i] != '') {
+        fields[i] = {
+          name : fieldNames[i],
+          type : fieldTypes[i],
+          values : fieldValues[i].split("|")
+        }
+      }
+      else {
+        fields[i] = null;
+      }
+    }
+    
+    data.splice(0, 4); //remove metadata
+
+    //calculating how many fields are filled
+    var totalNumFields = 0;
+    var totalNumEmptyFields = 0;
+    for(var i in data) {
+      var caseInfo = data[i];
+      for(var j in caseInfo) {
+        if (!fields[j]) continue; //skip header fields
+        var field = caseInfo[j];
+        ++totalNumFields;
+        if (!field) ++totalNumEmptyFields;
+      }
+    }
+    info.push("Data coverage : " + Math.floor((1.0-totalNumEmptyFields/totalNumFields)*1000)/10 + "%");
+
+    function sortByDecreasingCount(a, b) {
+      return -(a.count - b.count); //decreasing order
+    }
+    
+    function sortByYear(a, b) {
+      if (a.name > b.name) return 1;
+      if (b.name > a.name) return -1;
+      else return 0;
+    }    
+    
+    function buildValueRank(fieldNo, sortFunc, minLength) {
+      minLength = minLength || 0;
+      var valuesMap = {};
+      var valuesList = [];
+      var maxCount = 0;
+      for(var i in data) {
+        var caseInfo = data[i];
+        var fieldValues = ("" + caseInfo[fieldNo]).split("|");
+        
+        for(var j in fieldValues) {
+          var fieldValue = fieldValues[j];
+          if (!fieldValue) continue;
+          if (fieldValue == "undefined") continue;
+          if (fieldValue.length <= minLength) continue;
+          
+          if (!valuesMap[fieldValue]) {
+            var valueInfo = {
+              name: fieldValue,
+              count: 0
+            };
+            valuesList.push(valueInfo);
+            valuesMap[fieldValue] = valueInfo;
+          }
+          valuesMap[fieldValue].count++;
+        
+          if (valuesMap[fieldValue].count > maxCount) maxCount = valuesMap[fieldValue].count;
+        }
+      }
+      
+      valuesList.sort(sortFunc);
+      
+      valuesList.maxCount = maxCount;
+      return valuesList;
+    }
+    
+    function mapValueToPosition(value, field, index) {
+      if (field.type == "RADIO") {
+        if (index) return index / field.values.length;
+        else return (field.values.indexOf(value) + 1) / field.values.length;
+      }
+      else if (field.type == "RANGE") {
+        if (index) return index / 5;        
+        if (value) {
+          return (value / 5);
+        }
+        else return 0;
+      }
+      else return 0;        
+    }   
+    
+    function getLabelForIndex(i, field) {
+      if (field.type == "RADIO") {
+        return "" + field.values[i-1];
+      }
+      else if (field.type == "RANGE") {
+        return ""+i;
+      }   
+      else return "";
+    }    
+    
+    function getNumValues(field) {
+      if (field.type == "RADIO") {
+        return field.values.length;
+      }
+      else if (field.type == "RANGE") {
+        return 5;
+      }   
+      else return 1;
+      
+    }
+    
+    //only for radio box values
+    function buildPoints(fieldNo1, fieldNo2) {
+      var field1 = fields[fieldNo1];
+      var field2 = fields[fieldNo2];
+      
+      var pointMap = {};
+      var pointList = [];
+      var maxCount = 0;
+      
+      for(var i in data) {
+        var caseInfo = data[i];
+        var x = mapValueToPosition(caseInfo[fieldNo1], field1);
+        var y = mapValueToPosition(caseInfo[fieldNo2], field2);        
+        var hash = x + "-" + y;        
+        if (!pointMap[hash]) {
+          var point = {
+            xLabel: "" + caseInfo[fieldNo1],
+            yLabel: "" + caseInfo[fieldNo2],
+            x: x,
+            y: y,
+            count: 0
+          }          
+          pointMap[hash] = point;
+          pointList.push(point);
+        }
+        pointMap[hash].count++;
+        if (pointMap[hash].count > maxCount) maxCount =  pointMap[hash].count;
+      }
+      
+      pointList.field1 = field1;
+      pointList.field2 = field2;
+      pointList.maxCount = maxCount;      
+      return pointList;
+    }
+
+    function buildBarChart(title, data, maxValue, barRatio) {
+      maxValue = maxValue || 100;
+      barRatio = barRatio || 0.5;
+      var w = 300;
+      var h = 410;
+      var svg = d3.select("#charts")
+                  .append("svg")
+                  .attr("width", w)
+                  .attr("height", h);
+
+      svg.selectAll("rect")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("fill", "#00EDBA")
+        .attr("x", w*(1-barRatio) - 20)
+        .attr("y", function(d, i) { return 50 + i * 17; })
+        .attr("width", function(d, i) { return d.count / maxValue * w*barRatio; })
+        .attr("height", 16);
+
+      svg.selectAll("text.label")
+        .data(data)
+        .enter()
+        .append("text")
+        .attr("fill", "#000000")
+        .attr("class", "label")
+        .attr("x", w*(1-barRatio) - 25)
+        .attr("y", function(d, i) { return 64 + i * 17; })
+        .text(function(d) { return d.name; })
+        
+      svg.selectAll("text.value")
+        .data(data)
+        .enter()
+        .append("text")
+        .attr("class", "value")
+        .attr("fill", "#000000")
+        .attr("x", function(d) { return w*(1-barRatio) - 17 + d.count / maxValue * w*barRatio })
+        .attr("y", function(d, i) { return 64 + i * 17; })
+        .text(function(d) { return d.count; })
+      
+        
+      svg.append("text")
+        .attr("fill", "#000000")
+        .attr("class", "title")
+        .attr("x", 0)
+        .attr("y", 30)
+        .text(title)
+        
+      svg.append("line")
+        .attr("stroke", "#DDD")
+        .attr("x1", 0).attr("x2", w)
+        .attr("y1", 40.5).attr("y2", 40.5)
+    }
+    
+    function buildScatterPlot(title, data) {
+      var w = 300;
+      var h = 410;
+      var m = 30;
+      var svg = d3.select("#charts")
+                  .append("svg")
+                  .attr("width", w)
+                  .attr("height", h);
+
+      function addCircle(x, y, xLabel, yLabel) {
+        svg.append("circle")
+          .attr("class", "mark")
+          .attr("fill", "#DDDDDD")
+          .attr("cx", function() { return m + x * (w - 2*m); })
+          .attr("cy", function() { return m + 50 + y * (w - 2*m); })
+          .attr("r", function() { return 5; })    
+          .on("mouseover", function() { tooltip.text(xLabel.split("-")[0] + " - " + yLabel.split("-")[0]); })
+          .on("mouseout", function() { tooltip.text(""); }) 
+      }
+      for(var y=0; y<=getNumValues(data.field2); y++) {
+        for(var x=0; x<=getNumValues(data.field1); x++) {
+          addCircle(
+            mapValueToPosition(null, data.field1, x), 
+            mapValueToPosition(null, data.field2, y), 
+            getLabelForIndex(x, data.field1), 
+            getLabelForIndex(y, data.field2)
+          );
+        }
+      }
+      
+     var g = svg.selectAll("g")
+        .data(data)
+        .enter()
+        .append("circle")
+        .attr("class", "data")
+        .attr("fill", "#00EDBA")
+        .attr("cx", function(d) { return m + d.x * (w - 2*m); })
+        .attr("cy", function(d) { return m + 50 + d.y * (w - 2*m); })
+        .attr("r", function(d) { return 5 + 15 * d.count / data.maxCount; })
+        .on("mouseover", function(d) { tooltip.text(d.xLabel.split("-")[0] + " - " + d.yLabel.split("-")[0]); })
+        .on("mouseout", function(d) { tooltip.text(""); })
+        
+      var tooltip = svg.append("text")
+          .attr("class", "tooltip")
+          .attr("fill", "#000000")        
+          .attr("x", 0)
+          .attr("y", 60 + w)
+          .text("")
+      
+      svg.append("text")
+        .attr("fill", "#000000")
+        .attr("class", "title")
+        .attr("x", 0)
+        .attr("y", 30)
+        .text(title)
+        
+      svg.append("line")
+        .attr("stroke", "#DDD")
+        .attr("x1", 0).attr("x2", w)
+        .attr("y1", 40.5).attr("y2", 40.5)
+    }
+    
+    d3.select("#charts").append("h2").attr("class", "section").text("Values");
+
+    var countryRank = buildValueRank(5, sortByDecreasingCount);
+    buildBarChart("Countries", countryRank, countryRank.maxCount);
+    
+    var cityRank = buildValueRank(6, sortByDecreasingCount);
+    buildBarChart("Cities", cityRank, cityRank.maxCount);
+    
+    var yearRank = buildValueRank(10, sortByYear);
+    buildBarChart("Year", yearRank, yearRank.maxCount);
+    
+    var typeOfInstitutionRank = buildValueRank(7, sortByDecreasingCount);
+    buildBarChart("Type of Institution", typeOfInstitutionRank, typeOfInstitutionRank.maxCount);
+    
+    var fieldOfActivityRank = buildValueRank(8, sortByDecreasingCount);
+    buildBarChart("Field of Activity", fieldOfActivityRank, fieldOfActivityRank.maxCount);
+        
+    var focusOfInstitutionRank = buildValueRank(9, sortByDecreasingCount);
+    buildBarChart("Focus of Institution", focusOfInstitutionRank, focusOfInstitutionRank.maxCount);
+    
+    var topicRank = buildValueRank(17, sortByDecreasingCount);
+    buildBarChart("Topic", topicRank, topicRank.maxCount);
+    
+    var typeOfMediaRank = buildValueRank(26, sortByDecreasingCount);
+    buildBarChart("Type of Media", typeOfMediaRank, typeOfMediaRank.maxCount);
+    
+    d3.select("#charts").append("h2").attr("class", "section").text("Corelations");
+    
+    var techFocusVsTargetGroupPoints = buildPoints(23, 28);
+    buildScatterPlot("Tech Focus vs Target Group", techFocusVsTargetGroupPoints);
+    
+    var audienceInvolvementVsEngagementPoints = buildPoints(33, 34);
+    buildScatterPlot("Involvement vs Engagement", audienceInvolvementVsEngagementPoints);
+    
+    d3.select("#charts").append("h2").attr("class", "section").text("Words");
+    
+    var fieldMap = {};
+    var fieldList = [];
+    for(var i in data) {
+      var caseInfo = data[i];
+      for(var j in caseInfo) {
+        if (!fields[j]) continue; //skip header fields
+        if (fields[j].type != "TEXTAREA") continue;        
+        var field = caseInfo[j];
+        if (!field || field.length < 5) continue;
+        if (!fieldMap[fields[j].name]) {
+          var fieldInfo = {
+            name : fields[j].name,
+            cases : 0,
+            words : 0
+          }
+          fieldMap[fields[j].name] = fieldInfo;
+          fieldList.push(fieldInfo);
+        }
+        fieldMap[fields[j].name].cases++;
+        fieldMap[fields[j].name].words += field.split(" ").length;
+        caseInfo[j+"w"] = field.split(" ").join("|");
+      }
+    }
+    
+    var fieldWordMaxCount = 0;
+    for(var i in fieldList) {
+      fieldList[i].count = Math.floor(fieldList[i].words/fieldList[i].cases);
+      if (fieldList[i].count > fieldWordMaxCount) fieldWordMaxCount = fieldList[i].count;
+    }
+    fieldList.maxCount = fieldWordMaxCount;
+    
+    fieldList.sort(sortByDecreasingCount);
+    buildBarChart("Avg num of words in textareas", fieldList, fieldWordMaxCount, 0.08);
+    
+    for(var i=0; i<fields.length; i++) {        
+      if (!fields[i]) continue;
+      if (fields[i].type == "TEXTAREA") {
+        var fieldWordRank = buildValueRank(i + "w", sortByDecreasingCount, 4);
+        buildBarChart(fields[i].name + " Words", fieldWordRank, fieldWordRank.maxCount);          
+      }              
+    }    
+    
+    //displaying all the basic stats
+    d3.select("#stats").selectAll("p")
+      .data(info).enter()
+      .append("p")
+      .text(function(d) { return d; });
+
+  })
+}
+</script>
+</head>
+<body>
+<h1>Mela Cases</h1>
+<div id="stats"></div>
+<div id="charts"></div>
+</body>
+</html>

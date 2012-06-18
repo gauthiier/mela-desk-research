@@ -1,0 +1,41 @@
+0 : ID / ID
+2 : Timestamp / DATE
+4 : Name of the Institution / Organisation / TEXTFIELD
+5 : Country / COUNTRYLIST
+6 : City / TEXTFIELD
+7 : Type of Institution (as many as apply) / CHECKBOX
+8 : Field of Activity (as many as apply) / CHECKBOX
+9 : Focus of Institution (as many as apply) / CHECKBOX
+10 : Year / TEXTFIELD
+11 : Links / TEXTAREA
+12 : Principal Partner / LIST
+13 : Interested Partner / LIST
+14 : Links - for partners only / TEXTAREA
+16 : Name / TEXTFIELD
+17 : Topic / RADIO
+18 : Year / TEXTFIELD
+19 : Name / contact of curator / organiser / TEXTFIELD
+20 : Links / TEXTAREA
+22 : Description / TEXTAREA
+23 : Focus of technology / RADIO
+24 : Location of Technology Use / CHECKBOX
+25 : Time of Technology Use / CHECKBOX
+26 : Type of Media Exhibited / CHECKBOX
+27 : Actions and Mechanics of Interaction / TEXTAREA
+28 : Target Group / RADIO
+29 : Why is it of interest for MeLA's Research Field 05? / TEXTAREA
+30 : Impact - User perspective / TEXTAREA
+31 : Impact - Institution / Organisation perspective / TEXTAREA
+33 : Audience Involvment / RADIO
+34 : Audience Engagement / RANGE
+35 : Audience Perception / CHECKBOX
+36 : Exhibition Elements / RANGE
+37 : Technology Metaphor / RANGE
+39 : Identity Construction / RADIO
+40 : Representation / RADIO
+41 : Conception of Cultural Representations / RADIO
+42 : Audience of Cultural Representations / RADIO
+43 : Multinationalism / RADIO
+44 : Contemporaneousness / RADIO
+45 : Provocativeness / RADIO
+46 : Stance / RANGE
