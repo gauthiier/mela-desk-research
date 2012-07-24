@@ -1,0 +1,103 @@
+<html>
+<head>
+<title>MeLa Cases</title>
+<meta name = "viewport" content = "initial-scale = 1.0">
+<style type="text/css">
+
+@font-face { font-family: Abel; src: url('fonts/Abel/Abel-Regular.ttf'); }
+@font-face { font-family: Marvel; font-weight: bold; src: url('fonts/Marvel/Marvel-Bold.ttf'); }
+
+/*
+Background - creamy - #edebdd
+Features - sky blue - #55c1dc
+Features - grey - #a5a49a
+Features - white - #ffffff
+Text - black #000000
+
+Field 01 - dark green - #46a12a
+Field 02 - light green - #8ebc11
+Field 03 - yellow - #fed61e
+Field 04 - orange - #f39404
+Field 05 - tomato - #eb6909
+Field 06 - red - #e3001b
+*/
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Marvel, sans-serif;
+  margin: 1em;
+  background: #edebdd /*creamy*/;
+}
+
+p {
+  font-family: Abel, sans-serif;
+}
+
+h1 {
+  background: #FFF;
+  padding: 0.25em 0.5em;
+  border-bottom: 0.25em solid #55c1dc;
+}
+
+</style>
+<script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
+<script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
+<script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
+<script type="text/javascript">
+/*
+Correlated survey fields:
+- Country -> 5 t
+- City -> 6 t
+- Identity Construction -> 39 r
+- Representation -> 40 r
+- Conception of Cultural Representations -> 41 r
+- Audience of Cultural Representations -> 42 r
+- Multinationalism -> 43 r
+- Comtemporaneousness -> 44 r
+*/
+window.onload = function() {  
+  var xy;
+  
+  d3.text("data/Field05.csv", function(dataStr) {
+    var data = CSVToArray(dataStr);
+    
+    var info = [];
+    info.push("Field05 : " + data.length + " cases");
+    var verbose = false;
+   
+    if (verbose) console.log(info);
+    //build list of all fields and their types
+    var fieldNames = data[0];
+    var fieldTypes = data[2];
+    var fieldValues = data[3];
+    var fields = [];
+    for(var i in fieldNames) {      
+      if (fieldTypes[i] != '') {
+        fields[i] = {
+          name : fieldNames[i],
+          type : fieldTypes[i],
+          values : fieldValues[i].split("|")
+        }
+        if (verbose) console.log(i, fieldNames[i], fieldTypes[i])
+      }
+      else {
+        fields[i] = null;
+      }
+    }    
+    data.splice(0, 4); //remove metadata
+    
+    
+  });  
+}
+</script>
+</head>
+<body>
+<h1>Geographical mapping</h1>
+<div id="stats"></div>
+<div id="charts"></div>
+</body>
+</html>
