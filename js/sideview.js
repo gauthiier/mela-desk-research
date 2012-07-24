@@ -30,6 +30,7 @@ function sideviewInitSearch() {
           var dataStr = (""+data).toLowerCase();
           if (dataStr.indexOf(searchPhrase) > -1) {
             cases.push(melaCase);
+            break;
           }
         }
       }
@@ -122,6 +123,31 @@ function sideviewShowDetails(melacase) {
 	inline += "</dl>";
 
 	$("#sideview #details").html(inline);
+}
+
+printAll = function() {
+	var inline = "";
+
+  for(var ci in surveys[1].cases) {
+    var melacase = surveys[1].cases[ci];
+    inline += "<a href='javascript:sideviewEdit();'>Edit</a>";
+  	inline += "<h2>" + melacase.data.col_E + "</h2>";
+  	inline += "<dl>";
+    for(var i=0; i<melacase.survey.columns.length; i++) {
+      var columnId = melacase.survey.columns[i];
+      var field = melacase.survey.fields[columnId];
+      var data = melacase.data[columnId] || "";
+      var fieldBuilder = sideviewGetFieldBuilder(field, data);
+      var html = fieldBuilder.toDisplayHtml();
+      if (!html) {
+        html += "<dt>" + field.label + "</dt>";
+        html += "<dd>&nbsp;</dd>";
+      }
+      inline += html;
+  	}
+  	inline += "</dl>";
+  }  
+  console.log(inline);
 }
 
 function sideviewDelete() {
