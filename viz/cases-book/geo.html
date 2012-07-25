@@ -170,6 +170,7 @@ window.onload = function() {
 
       var white = chroma.hex('#fff');
       var skyBlue = chroma.hex('#55c1dc');
+      var tomatoRed = chroma.hex('#eb6909');
 
       function highlight(countingFunction) {
         countryMap
@@ -193,7 +194,7 @@ window.onload = function() {
         for(var iso in casesCountPerCountry) {
           var count = casesCountPerCountry[iso]
           d3.select("#iso_" + iso)
-            .attr("fill", white.interpolate(0.5 + 0.5*count/maxCount, skyBlue, 'hsl'));
+            .attr("fill", white.interpolate(0.5 + 0.5*count/maxCount, tomatoRed, 'hsl'));
         }
       }
 
@@ -207,6 +208,65 @@ window.onload = function() {
 
       highlight(countCases);
 
+      //STATS
+
+      var stats = d3.select("#statsContainer")
+                  .append("svg")
+                  .attr("width", 950)
+                  .attr("height", 400)
+                  .attr("id", "stats");
+
+      function groupByCountry(data) {
+        var countries = {};
+
+        data.forEach(function(melaCase) {
+          var country = melaCase[5];
+          var iso = countryNameToIso(country);
+          if (!countries[iso]) {
+            countries[iso] = [];
+          }
+          countries[iso].push(melaCase)
+        });
+        var result = [];
+        for(var iso in countries) {
+          result.push({ iso:iso, cases:countries[iso] });
+        }
+        return result;
+      }
+
+      function countOptions(data, fieldId) {
+        var count = [];
+        var possibleValues = fields[fieldId].values;
+
+        possibleValues.forEach(function(value, i) {
+          count.push(0);
+        });
+
+        data.forEach(function(melaCase) {
+          var answer = melaCase[fieldId];
+          count[possibleValues.indexOf(answer)]++;
+        });
+
+        return count;
+      }
+
+      var countriesCases = groupByCountry(data);
+      countriesCases.forEach(function(country) {
+        var count = countOptions(country.cases, 39);
+        console.log(country.iso, count);
+      })
+
+      //svg.selectAll("rect")
+      //  .data(data)
+      //  .enter()
+      //  .append("rect")
+      //  .attr("fill", "#00EDBA")
+      //  .attr("x", w*(1-barRatio) - 20)
+      //  .attr("y", function(d, i) { return 50 + i * 17; })
+      //  .attr("width", function(d, i) { return d.count / maxValue * w*barRatio; })
+      //  .attr("height", 16);
+
+
 
     });
   }
@@ -219,9 +279,8 @@ window.onload = function() {
 <body>
   <div id="page">
     <h1>Geographical mapping</h1>
+    <div id="statsContainer"></div>
     <div id="countryMapContainer"></div>
-    <div id="stats"></div>
-    <div id="charts"></div>
   </div>
 </body>
 </html>
