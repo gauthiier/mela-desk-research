@@ -8,6 +8,10 @@
 @font-face { font-family: Marvel; font-weight: bold; src: url('fonts/Marvel/Marvel-Bold.ttf'); }
 
 /*
+Size 140mm x 205mm
+
+650 x 950
+
 Background - creamy - #edebdd
 Features - sky blue - #55c1dc
 Features - grey - #a5a49a
@@ -41,12 +45,29 @@ h1 {
   background: #FFF;
   padding: 0.25em 0.5em;
   border-bottom: 0.25em solid #55c1dc;
+  margin-bottom: 1px;
+}
+
+#page {
+  width: 950px;
+  margin:0 auto;
+}
+
+#countryMapContainer {
+  width: 950px;
+  height: 650px;
+}
+
+path.country {
+  xfill: #55c1dc;
+  xfill: #FFF;
 }
 
 </style>
 <script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
 <script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
 <script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
+<script type="text/javascript" src="js/underscore.js"></script><!-- color manipulation library -->
 <script type="text/javascript">
 /*
 Correlated survey fields:
@@ -59,45 +80,148 @@ Correlated survey fields:
 - Multinationalism -> 43 r
 - Comtemporaneousness -> 44 r
 */
-window.onload = function() {  
-  var xy;
-  
-  d3.text("data/Field05.csv", function(dataStr) {
-    var data = CSVToArray(dataStr);
-    
-    var info = [];
-    info.push("Field05 : " + data.length + " cases");
-    var verbose = false;
-   
-    if (verbose) console.log(info);
-    //build list of all fields and their types
-    var fieldNames = data[0];
-    var fieldTypes = data[2];
-    var fieldValues = data[3];
-    var fields = [];
-    for(var i in fieldNames) {      
-      if (fieldTypes[i] != '') {
-        fields[i] = {
-          name : fieldNames[i],
-          type : fieldTypes[i],
-          values : fieldValues[i].split("|")
+window.onload = function() {
+  var isoCountries;
+  var countryMap;
+
+  function countryNameToIso(name) {
+    var nameUpper = name.toUpperCase();
+    if (name == "United States of America") {
+      nameUpper = "UNITED STATES";
+    }
+    var matches = _.filter(isoCountries, function(country) {
+      return nameUpper == country[0];
+    })
+    if (matches.length > 0) {
+      return matches[0][1];
+    }
+    else {
+      console.log("No ISO found for " + name);
+      return "Unknown";
+    }
+  }
+  function loadCountryList() {
+    d3.text("data/iso-countries.csv", function(list) {
+      isoCountries = CSVToArray(list);
+      loadMap();
+    });
+  }
+
+  function loadMap() {
+    var xy = d3.geo.mercator();
+    var path = d3.geo.path().projection(xy);
+
+    //scale the map a bit bigger than the div, we don't need Greenland and Antarctic
+    xy.scale(950+100);
+    var translate = xy.translate();
+    translate[0] = (950+100) * 0.5 - 50;
+    translate[1] = 650 * 0.6 + 20;
+    xy.translate(translate);
+
+    countryMap = d3.select("#countryMapContainer")
+      .append("svg:svg")
+      .append("svg:g")
+        .attr("id", "countryMap");
+
+    d3.json("data/world-countries-iso.json", function(collection) {
+      countryMap
+        .selectAll("path")
+          .data(collection.features)
+        .enter().append("svg:path")
+          .attr("d", path)
+          .attr("fill", "rgb(255, 255, 255)")
+          .attr("id", function(d) { return "iso_" + d.iso; })
+          .attr("class", "country")
+        .append("svg:title")
+          .text(function(d) { return d.properties.name; });
+
+        loadCasesData();
+    });
+  }
+
+  function loadCasesData() {
+    d3.text("data/Field05.csv", function(dataStr) {
+      var data = CSVToArray(dataStr);
+
+      var info = [];
+      info.push("Field05 : " + data.length + " cases");
+      var verbose = false;
+
+      if (verbose) console.log(info);
+      //build list of all fields and their types
+      var fieldNames = data[0];
+      var fieldTypes = data[2];
+      var fieldValues = data[3];
+      var fields = [];
+      for(var i in fieldNames) {
+        if (fieldTypes[i] != '') {
+          fields[i] = {
+            name : fieldNames[i],
+            type : fieldTypes[i],
+            values : fieldValues[i].split("|")
+          }
+          if (verbose) console.log(i, fieldNames[i], fieldTypes[i])
         }
-        if (verbose) console.log(i, fieldNames[i], fieldTypes[i])
+        else {
+          fields[i] = null;
+        }
       }
-      else {
-        fields[i] = null;
+      data.splice(0, 4); //remove metadata
+
+      var white = chroma.hex('#fff');
+      var skyBlue = chroma.hex('#55c1dc');
+
+      function highlight(countingFunction) {
+        countryMap
+            .selectAll("path.country")
+            .attr("fill", "rgb(255, 255, 255)");
+
+
+        var casesCountPerCountry = {};
+        data.forEach(function(melaCase) {
+          var country = melaCase[5];
+          var iso = countryNameToIso(country);
+          if (!casesCountPerCountry[iso]) {
+            casesCountPerCountry[iso] = 0;
+          }
+          casesCountPerCountry[iso] += countingFunction(melaCase);
+        })
+
+        var maxCount = _.max(casesCountPerCountry, function(count) { return count; });
+
+        //casesCountPerCountry.forEach(function(count, iso) {
+        for(var iso in casesCountPerCountry) {
+          var count = casesCountPerCountry[iso]
+          d3.select("#iso_" + iso)
+            .attr("fill", white.interpolate(0.5 + 0.5*count/maxCount, skyBlue, 'hsl'));
+        }
       }
-    }    
-    data.splice(0, 4); //remove metadata
-    
-    
-  });  
+
+      //each case counts as one
+      function countCases(melaCase) { return 1; }
+
+      function indentityConstruction(melaCase) {
+        console.log(melaCase[39]);
+        return 0;
+      }
+
+      highlight(countCases);
+
+
+    });
+  }
+
+  //start load sequence
+  loadCountryList();
 }
 </script>
 </head>
 <body>
-<h1>Geographical mapping</h1>
-<div id="stats"></div>
-<div id="charts"></div>
+  <div id="page">
+    <h1>Geographical mapping</h1>
+    <div id="countryMapContainer"></div>
+    <div id="stats"></div>
+    <div id="charts"></div>
+  </div>
 </body>
 </html>
