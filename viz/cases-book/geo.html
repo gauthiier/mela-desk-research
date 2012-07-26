@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>MeLa Cases</title>
+<title>MeLa Cases - geographical mapping</title>
 <meta name = "viewport" content = "initial-scale = 1.0">
 <style type="text/css">
 
@@ -48,9 +48,17 @@ h1 {
   margin-bottom: 1px;
 }
 
+h1.tomatoOrange {
+  border-bottom: 0.25em solid #eb6909;
+}
+
 #page {
   width: 950px;
   margin:0 auto;
+}
+
+#options {
+  margin-bottom: 0.5em;
 }
 
 #countryMapContainer {
@@ -63,26 +71,52 @@ path.country {
   xfill: #FFF;
 }
 
+text.smallLabel {
+  font-size: 60%;
+  text-transform: uppercase;
+  font-family: Abel ;
+}
+
+label input {
+  margin-right: 1em;
+  margin-left: 2em;
+}
+
+label:first-child input {
+  margin-left: 0;
+}
+
+label {
+  font-size: 85%;
+}
+
 </style>
 <script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
 <script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
 <script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
-<script type="text/javascript" src="js/underscore.js"></script><!-- color manipulation library -->
+<script type="text/javascript" src="js/underscore.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/options.js"></script><!-- options at the top of the page -->
 <script type="text/javascript">
 /*
 Correlated survey fields:
-- Country -> 5 t
-- City -> 6 t
-- Identity Construction -> 39 r
-- Representation -> 40 r
-- Conception of Cultural Representations -> 41 r
-- Audience of Cultural Representations -> 42 r
-- Multinationalism -> 43 r
-- Comtemporaneousness -> 44 r
+
+- Field of activity
+- Year
+- Focus of technology
+- Type of Media Exhibited
+- Actions and Mechanics of interaction
+- Audience Engagement
+- Exhibition Elements
+- Technology Metaphor
+
 */
 window.onload = function() {
   var isoCountries;
   var countryMap;
+
+  var options = new Options();
+  options.add("normalize", "Normalize answers per country", true);
+  options.add("removeNA", "Remove not applicable cases", true);
 
   function countryNameToIso(name) {
     var nameUpper = name.toUpperCase();
@@ -167,10 +201,11 @@ window.onload = function() {
         }
       }
       data.splice(0, 4); //remove metadata
-
+      
       var white = chroma.hex('#fff');
       var skyBlue = chroma.hex('#55c1dc');
       var tomatoRed = chroma.hex('#eb6909');
+      var cyan = chroma.hex('#00EDBA');
 
       function highlight(countingFunction) {
         countryMap
@@ -202,7 +237,6 @@ window.onload = function() {
       function countCases(melaCase) { return 1; }
 
       function indentityConstruction(melaCase) {
-        console.log(melaCase[39]);
         return 0;
       }
 
@@ -210,10 +244,12 @@ window.onload = function() {
 
       //STATS
 
+      var pageWdth = 950;
+
       var stats = d3.select("#statsContainer")
                   .append("svg")
-                  .attr("width", 950)
-                  .attr("height", 400)
+                  .attr("width", pageWdth)
+                  .attr("height", 450)
                   .attr("id", "stats");
 
       function groupByCountry(data) {
@@ -250,23 +286,87 @@ window.onload = function() {
         return count;
       }
 
+      var questionIdList = [39, 40, 41, 42, 44];
+
       var countriesCases = groupByCountry(data);
-      countriesCases.forEach(function(country) {
-        var count = countOptions(country.cases, 39);
-        console.log(country.iso, count);
+      var widthPerCountry = pageWdth / countriesCases.length / 2;
+
+      var dx = 0;
+      var dy = 50;
+      questionIdList.forEach(function(id) {
+
+
+        var questionGroup = stats.append('g').attr('id', 'q_' + id);
+
+        dx = 0;
+
+        stats.append("text")
+          .attr("fill", "#000000")
+          .attr("x", 2)
+          .attr("y", dy - 5)
+          .text(fields[id].name);
+
+        fields[id].values.forEach(function(possibleAnswer, i) {
+          stats.append("text")
+            .attr("fill", "#000000")
+            .attr("x", pageWdth/2 + 2)
+            .attr("y", dy + 11 * i + 10)
+            .attr("class", "smallLabel")
+            .text(possibleAnswer);
+        })
+
+        function removeIfLastAnswer(melaCase) {
+          var possibleAnswers = fields[id].values;
+          var answer = melaCase[id];
+          var answerIndex = possibleAnswers.indexOf(answer);
+          return answerIndex != possibleAnswers.length - 1;
+        }
+
+        if (options.getValue("removeNA")) {
+            countriesCases.forEach(function(country) {
+              country["cases_" + id] = _.filter(country.cases, removeIfLastAnswer);
+            })
+        }
+        else {
+          countriesCases.forEach(function(country) {
+            country["cases_" + id] = country.cases;
+          });
+        }
+
+        var maxCount = countriesCases.reduce(function(maxCount, country) {
+          var count = countOptions(country["cases_" + id], id);
+          return Math.max(maxCount, _.max(count));
+        }, 0);
+
+        countriesCases.forEach(function(country, countryIndex) {
+          var count = countOptions(country["cases_" + id], id);
+          //console.log(id, country.iso, count);
+
+          var scale = options.getValue("normalize") ? 1/country["cases_" + id].length : 1/maxCount;
+          if (country["cases_" + id].length == 0) scale = 1;
+
+          count.forEach(function(value, i) {
+            questionGroup.append("rect")
+              .attr("fill", white.interpolate(value*scale, skyBlue, 'hsl'))
+              .attr("x", dx)
+              .attr("y", dy + 11 * i)
+              .attr("width", widthPerCountry-1)
+              .attr("height", 10);
+          });
+
+          dx += widthPerCountry;
+        })
+        dy += fields[id].values.length * 11 + 25;
       })
 
-      //svg.selectAll("rect")
-      //  .data(data)
-      //  .enter()
-      //  .append("rect")
-      //  .attr("fill", "#00EDBA")
-      //  .attr("x", w*(1-barRatio) - 20)
-      //  .attr("y", function(d, i) { return 50 + i * 17; })
-      //  .attr("width", function(d, i) { return d.count / maxValue * w*barRatio; })
-      //  .attr("height", 16);
-
-
+      countriesCases.forEach(function(country, i) {
+        stats.append("text")
+          .attr("fill", "#000000")
+          .attr("x", widthPerCountry * i + 5)
+          .attr("y", dy - 11)
+          .attr("class", "smallLabel")
+          .text(country.iso);
+      })
 
     });
   }
@@ -278,8 +378,10 @@ window.onload = function() {
 </head>
 <body>
   <div id="page">
-    <h1>Geographical mapping</h1>
+    <div id="options"></div>
+    <h1>Answers histogram</h1>
     <div id="statsContainer"></div>
+    <h1 class="tomatoOrange">Geographical mapping of all Field05 cases</h1>
     <div id="countryMapContainer"></div>
   </div>
 </body>
