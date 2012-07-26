@@ -1,0 +1,409 @@
+<html>
+<head>
+<title>MeLa Cases - time</title>
+<meta name = "viewport" content = "initial-scale = 1.0">
+<style type="text/css">
+
+@font-face { font-family: Abel; src: url('fonts/Abel/Abel-Regular.ttf'); }
+@font-face { font-family: Marvel; font-weight: bold; src: url('fonts/Marvel/Marvel-Bold.ttf'); }
+
+/*
+Size 140mm x 205mm
+
+650 x 950
+
+Background - creamy - #edebdd
+Features - sky blue - #55c1dc
+Features - grey - #a5a49a
+Features - white - #ffffff
+Text - black #000000
+
+Field 01 - dark green - #46a12a
+Field 02 - light green - #8ebc11
+Field 03 - yellow - #fed61e
+Field 04 - orange - #f39404
+Field 05 - tomato - #eb6909
+Field 06 - red - #e3001b
+*/
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Marvel, sans-serif;
+  margin: 1em;
+  background: #edebdd /*creamy*/;
+}
+
+p {
+  font-family: Abel, sans-serif;
+}
+
+h1 {
+  background: #FFF;
+  padding: 0.25em 0.5em;
+  border-bottom: 0.25em solid #55c1dc;
+  margin-bottom: 1px;
+}
+
+h1.tomatoOrange {
+  border-bottom: 0.25em solid #eb6909;
+}
+
+#page {
+  width: 950px;
+  margin:0 auto;
+}
+
+#options {
+  margin-bottom: 0.5em;
+}
+
+#countryMapContainer {
+  width: 950px;
+  height: 650px;
+}
+
+path.country {
+  xfill: #55c1dc;
+  xfill: #FFF;
+}
+
+text.smallLabel {
+  font-size: 60%;
+  text-transform: uppercase;
+  font-family: Abel ;
+}
+
+label input {
+  margin-right: 1em;
+  margin-left: 2em;
+}
+
+label:first-child input {
+  margin-left: 0;
+}
+
+label {
+  font-size: 85%;
+}
+
+</style>
+<script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
+<script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
+<script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
+<script type="text/javascript" src="js/underscore.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/options.js"></script><!-- options at the top of the page -->
+<script type="text/javascript" src="js/common.js"></script><!-- options at the top of the page -->
+<script type="text/javascript">
+/*
+Correlated survey fields:
+
+- Field of activity 8 c
+- Year 10 t
+- Focus of technology 23 r
+- Type of Media Exhibited 26 c
+- Actions and Mechanics of interaction 27 ta
+- Audience Engagement 34 rng
+- Exhibition Elements 36 rng
+- Technology Metaphor 37 rng
+
+*/
+window.onload = function() {
+  var isoCountries;
+  var countryMap;
+
+  var options = new Options();
+  options.add("normalize", "Normalize answers per year", true);
+
+  function countryNameToIso(name) {
+    var nameUpper = name.toUpperCase();
+    if (name == "United States of America") {
+      nameUpper = "UNITED STATES";
+    }
+    var matches = _.filter(isoCountries, function(country) {
+      return nameUpper == country[0];
+    })
+    if (matches.length > 0) {
+      return matches[0][1];
+    }
+    else {
+      console.log("No ISO found for " + name);
+      return "Unknown";
+    }
+  }
+  function loadCountryList() {
+    d3.text("data/iso-countries.csv", function(list) {
+      isoCountries = CSVToArray(list);
+      loadMap();
+    });
+  }
+
+  function loadMap() {
+    var xy = d3.geo.mercator();
+    var path = d3.geo.path().projection(xy);
+
+    //scale the map a bit bigger than the div, we don't need Greenland and Antarctic
+    xy.scale(950+100);
+    var translate = xy.translate();
+    translate[0] = (950+100) * 0.5 - 50;
+    translate[1] = 650 * 0.6 + 20;
+    xy.translate(translate);
+
+    countryMap = d3.select("#countryMapContainer")
+      .append("svg:svg")
+      .append("svg:g")
+        .attr("id", "countryMap");
+
+    d3.json("data/world-countries-iso.json", function(collection) {
+      countryMap
+        .selectAll("path")
+          .data(collection.features)
+        .enter().append("svg:path")
+          .attr("d", path)
+          .attr("fill", "rgb(255, 255, 255)")
+          .attr("id", function(d) { return "iso_" + d.iso; })
+          .attr("class", "country")
+        .append("svg:title")
+          .text(function(d) { return d.properties.name; });
+
+        loadCasesData();
+    });
+  }
+
+  function loadCasesData() {
+    d3.text("data/Field05.csv", function(dataStr) {
+      var data = CSVToArray(dataStr);
+
+      var info = [];
+      info.push("Field05 : " + data.length + " cases");
+      var verbose = false;
+
+      if (verbose) console.log(info);
+      //build list of all fields and their types
+      var fieldNames = data[0];
+      var fieldTypes = data[2];
+      var fieldValues = data[3];
+      var fields = [];
+      for(var i in fieldNames) {
+        if (fieldTypes[i] != '') {
+          fields[i] = {
+            name : fieldNames[i],
+            type : fieldTypes[i],
+            values : fieldValues[i].split("|")
+          }
+          if (verbose) console.log(i, fieldNames[i], fieldTypes[i])
+        }
+        else {
+          fields[i] = null;
+        }
+      }
+      data.splice(0, 4); //remove metadata
+
+      var white = chroma.hex('#fff');
+      var skyBlue = chroma.hex('#55c1dc');
+      var tomatoRed = chroma.hex('#eb6909');
+      var cyan = chroma.hex('#00EDBA');
+
+      function highlight(countingFunction) {
+        countryMap
+            .selectAll("path.country")
+            .attr("fill", "rgb(255, 255, 255)");
+
+
+        var casesCountPerCountry = {};
+        data.forEach(function(melaCase) {
+          var country = melaCase[5];
+          var iso = countryNameToIso(country);
+          if (!casesCountPerCountry[iso]) {
+            casesCountPerCountry[iso] = 0;
+          }
+          casesCountPerCountry[iso] += countingFunction(melaCase);
+        })
+
+        var maxCount = _.max(casesCountPerCountry, function(count) { return count; });
+
+        //casesCountPerCountry.forEach(function(count, iso) {
+        for(var iso in casesCountPerCountry) {
+          var count = casesCountPerCountry[iso]
+          d3.select("#iso_" + iso)
+            .attr("fill", white.interpolate(0.5 + 0.5*count/maxCount, tomatoRed, 'hsl'));
+        }
+      }
+
+      //each case counts as one
+      function countCases(melaCase) { return 1; }
+
+      function indentityConstruction(melaCase) {
+        return 0;
+      }
+
+      highlight(countCases);
+
+      //STATS
+
+      var pageWdth = 950;
+
+      var stats = d3.select("#statsContainer")
+                  .append("svg")
+                  .attr("width", pageWdth)
+                  .attr("height", 600)
+                  .attr("id", "stats");
+
+      function countOptions(data, fieldId) {
+        var count = [];
+        var possibleValues = fields[fieldId].values;
+
+        if (fields[fieldId].type == "RANGE") {
+          for(var i=0; i<5; i++)
+            count.push(0);
+        }
+        else {
+          possibleValues.forEach(function(value, i) {
+            count.push(0);
+          });
+        }
+
+        data.forEach(function(melaCase) {
+          var answer = melaCase[fieldId]
+          if (fields[fieldId].type != "RANGE") {
+            answer = answer.split("|");
+            answer.forEach(function(a) {
+              count[possibleValues.indexOf(a)]++;
+            })
+          }
+          else {
+            count[answer]++;
+          }
+        });
+        if (fields[fieldId].type == "RANGE" && count.length > 5) {
+          count.pop();
+        }
+        return count;
+      }
+
+      var questionIdList = [8, 23, 26, 34, 36, 37];
+
+      var yearsCases = groupCasesBy(data, 10/*year*/, "year", parseYear);
+      var widthPerCountry = pageWdth / yearsCases.length / 2;
+      
+      yearsCases.sort(function(a, b) {
+        var ya = parseYear(a.year);
+        var yb = parseYear(b.year);
+        if (ya == "  NA" ) return -1;
+        else if (yb == "  NA") return 1; 
+        return ya - yb;
+      })
+      
+
+      var dx = 0;
+      var dy = 50;
+      questionIdList.forEach(function(id) {
+        var questionGroup = stats.append('g').attr('id', 'q_' + id);
+
+        dx = 0;
+
+        stats.append("text")
+          .attr("fill", "#000000")
+          .attr("x", 2)
+          .attr("y", dy - 5)
+          .text(fields[id].name);
+
+        if (fields[id].type == "RANGE") {
+          var values = ["1 - " + fields[id].values[2], "2", "3", "4", "5 - " + fields[id].values[3]];
+          values.forEach(function(possibleAnswer, i) {
+                      stats.append("text")
+                        .attr("fill", "#000000")
+                        .attr("x", pageWdth/2 + 2)
+                        .attr("y", dy + 11 * i + 10)
+                        .attr("class", "smallLabel")
+                        .text(possibleAnswer);
+                    })
+
+        }
+        else {
+          fields[id].values.forEach(function(possibleAnswer, i) {
+            stats.append("text")
+              .attr("fill", "#000000")
+              .attr("x", pageWdth/2 + 2)
+              .attr("y", dy + 11 * i + 10)
+              .attr("class", "smallLabel")
+              .text(possibleAnswer);
+          })
+        }
+
+        function removeIfLastAnswer(melaCase) {
+          var possibleAnswers = fields[id].values;
+          var answer = melaCase[id];
+          var answerIndex = possibleAnswers.indexOf(answer);
+          return answerIndex != possibleAnswers.length - 1;
+        }
+
+        yearsCases.forEach(function(country) {
+          country["cases_" + id] = country.cases;
+        });
+
+        var maxCount = yearsCases.reduce(function(maxCount, country) {
+          var count = countOptions(country["cases_" + id], id);
+          return Math.max(maxCount, _.max(count));
+        }, 0);
+        
+
+        yearsCases.forEach(function(country, countryIndex) {
+          var count = countOptions(country["cases_" + id], id);
+          //console.log(id, country.iso, count);
+          var yearCount = _.reduce(count, function(total, c) { return total + c; }, 1);
+
+          var scale = options.getValue("normalize") ? 1/yearCount : 1/maxCount;
+          if (country["cases_" + id].length == 0) scale = 1;
+
+          count.forEach(function(value, i) {
+            questionGroup.append("rect")
+              .attr("fill", white.interpolate(value*scale, skyBlue, 'hsl'))
+              .attr("x", dx)
+              .attr("y", dy + 11 * i)
+              .attr("width", widthPerCountry-1)
+              .attr("height", 10);
+          });
+
+          dx += widthPerCountry;
+        })
+
+        if (fields[id].type == "RANGE") {
+          dy += 6 * 11 + 25;
+        }
+        else {
+          dy += fields[id].values.length * 11 + 25;
+        }
+      })
+     
+      yearsCases.forEach(function(country, i) {
+        stats.append("text")
+          .attr("fill", "#000000")
+          .attr("x", widthPerCountry * i + 5)
+          .attr("y", dy - 11)
+          .attr("class", "smallLabel")
+          .text(country.year.substr(2, 2));
+      })
+
+    });
+  }
+
+  //start load sequence
+  loadCountryList();
+}
+</script>
+</head>
+<body>
+  <div id="page">
+    <div id="options"></div>
+    <h1>Timeline</h1>
+    <h1>Answers histogram</h1>
+    <div id="statsContainer"></div>
+    <h1 class="tomatoOrange">Geographical mapping of all Field05 cases</h1>
+    <div id="countryMapContainer"></div>
+  </div>
+</body>
+</html>
