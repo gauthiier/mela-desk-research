@@ -1,6 +1,9 @@
 var sideviewCurrentCase = null;
 var sideviewCurrentSurvey = null;
 
+var nonApplicableFields = ["Identity Construction", "Representation", "Conception of Cultural Representations", "Audience of Cultural Representations", "Multinationalism", "Contemporaneousness" ,"Provocativeness"];
+
+
 String.prototype.format = function() {
   var args = arguments;
   return this.replace(/{(\d+)}/g, function(match, number) {
@@ -54,10 +57,49 @@ function sideviewGetFieldBuilder(field, data) {
   }
 }
 
+
+function isAnswerNotApplicable(melaCase, columnId) {
+  var field = melaCase.survey.fields[columnId];
+  var answer = melaCase.data[columnId];
+
+  if (nonApplicableFields.indexOf(field.label) > -1) {
+    if (!field.possibleAnswers) field.possibleAnswers = field.constraints.split("|");
+    return (field.possibleAnswers.indexOf(answer) == field.possibleAnswers.length-1);
+  }
+
+  return false;
+}
+
+function caseAnswerCoverage(melaCase) {
+  var survey = melaCase.survey;
+
+  var questions = 0;
+  var answers = 0;
+  var notApplicable = 0;
+  for(var i=0; i<survey.columns.length; i++) {
+    var columnId = melaCase.survey.columns[i];
+    var field = melaCase.survey.fields[columnId];
+    if (!field.type) continue;
+
+    var answer = melaCase.data[columnId];
+
+    if (isAnswerNotApplicable(melaCase, columnId)) notApplicable++;
+
+    questions++;
+
+    if (answer) answers++;
+  }
+  return "<span style='color:#AAA; '>" + answers + " / " + questions + " / " + "</span>" + "<b>" + notApplicable + "</b>";
+}
+
 function sideviewBuildCaseHtml(melaCase, selectedMelacase) {
   var cssClasses = (melaCase == selectedMelacase) ? "selected" : "";
   cssClasses += " " + melaCase.survey.info.cssClass;
-  var caseHtml = $("<div class='caseDetails {0}'><dl><dt>{1}</dt><dd>{2}</dd></dl></div>".format(cssClasses, melaCase.data.col_E, melaCase.data.col_G));
+
+  var coverage = caseAnswerCoverage(melaCase);
+
+  var caseHtml = $("<div class='caseDetails {0}'><dl><dt>{1}</dt><dd>{2}, {3} </dd></dl></div>"
+    .format(cssClasses, melaCase.data.col_E, melaCase.data.col_G, coverage));
   $("#cases_list").append(caseHtml);
 
   caseHtml.click(function() {
@@ -146,7 +188,7 @@ printAll = function() {
       inline += html;
   	}
   	inline += "</dl>";
-  }  
+  }
   console.log(inline);
 }
 
@@ -194,6 +236,8 @@ function sideviewEdit() {
   for(var i=0; i<melacase.survey.columns.length; i++) {
     var columnId = melacase.survey.columns[i];
     var field = melacase.survey.fields[columnId];
+    var na = isAnswerNotApplicable(melacase, columnId);
+    var empty = (field.type && !melacase.data[columnId]);
     if (field.section) {
       inline += "</dl>";
       inline += "<h3>" + field.section + "</h3>";
@@ -201,8 +245,11 @@ function sideviewEdit() {
     }
     var data = melacase.data[columnId] || "";
     var fieldBuilder = sideviewGetFieldBuilder(field, data);
+    if (na || empty) inline += "<div style='background: rgba(255, 0, 0, 0.1); padding: 0.5em'>";
     inline += fieldBuilder.toEditFormHtml();
-	}
+    if (na || empty) inline += "</div>";
+ 	}
+
 	inline += "</dl>";
 
 	$("#sideview #details").html(inline);
