@@ -41,6 +41,10 @@ try {
     $query->setSpreadsheetQuery('id='.$rowData['id']);
     $listFeed = $service->getListFeed($query);
 
+    //remove escape characters
+    foreach($rowData as $field => $value) {
+      $rowData[$field] = preg_replace("/[\\\]+/", "", $rowData[$field]);
+    }
     $rowToUpdate = $listFeed->offsetGet(0);
     $entryResult = $service->updateRow($rowToUpdate, $rowData);
     echo 'Updating row ' . $rowData['id'] . '\n';
