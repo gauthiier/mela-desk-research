@@ -66,7 +66,7 @@ h1 {
 
 #options label input {
   margin-right: 1em;
-  xmargin-left: 2em;  
+  xmargin-left: 2em;
 }
 
 #options label:first-child input {
@@ -91,7 +91,7 @@ text.smallLabel {
 <script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
 <script type="text/javascript" src="js/underscore.js"></script><!-- functional programming utils -->
 <script type="text/javascript" src="js/options.js"></script><!-- functional programming utils -->
-<script type="text/javascript">  
+<script type="text/javascript">
 
 //-----------------------------------------------------------------------------
 
@@ -101,7 +101,7 @@ var Fields = {
   City : 6, //TEXTFIELD
   TypeOfInstitution : 7, //CHECKBOX
   FieldOfActivity : 8, //CHECKBOX
-  FocusOfInstitution : 9, //CHECKBOX
+  //FocusOfInstitution : 9, //CHECKBOX
   Year : 10, //TEXTFIELD
   Links : 11, //TEXTAREA
   PrincipalPartner : 12, //LIST
@@ -141,7 +141,7 @@ var Colors = {
   White : chroma.hex('#fff'),
   SkyBlue : chroma.hex('#55c1dc'),
   TomatoRed : chroma.hex('#eb6909'),
-  Cyan : chroma.hex('#00EDBA')  
+  Cyan : chroma.hex('#00EDBA')
 }
 
 //-----------------------------------------------------------------------------
@@ -156,7 +156,7 @@ DataSource.prototype.loadCountryList = function() {
   var self = this;
   d3.text("data/iso-countries.csv", function(list) {
     self.isoCountries = CSVToArray(list);
-    
+
     if (self.onLoadCallback) {
       self.onLoadCallback();
       self.onLoadCallback = null;
@@ -230,41 +230,41 @@ DataSource.prototype.countryNameToIso = function(name) {
 }
 
 DataSource.prototype.findAndCountAllPossibleValues = function(fieldId, sortMode) {
-  
+
   sortMode = sortMode || "count";
-  
+
   function getValues(fieldId) {
     return function(melaCase) {
       return melaCase[fieldId];
     }
   }
-  
+
   function sorterDesc(property) {
     return function(a, b) {
       return -(a[property] - b[property]);
     }
   }
-  
+
   var casesValues = this.data.map(getValues(fieldId));
   var values = {};
-  
+
   function addValue(value) {
     if (!values[value]) values[value] = 0;
     values[value]++;
   }
-  
+
   casesValues.forEach(function(value) {
     if (value.indexOf("|") !== -1)
-      value.split("|").forEach(addValue);    
-    else 
+      value.split("|").forEach(addValue);
+    else
       addValue(value);
   })
-  
+
   var result = [];
   for(var value in values) {
     result.push({value : value, count : values[value]});
   }
-  
+
   return result.sort(sorterDesc(sortMode));
 }
 
@@ -272,7 +272,7 @@ DataSource.prototype.findAndCountAllPossibleValuesMax = function(questionId) {
   var answers = this.findAndCountAllPossibleValues(questionId);
   var max = answers.reduce(function(max, answer) {
     return Math.max(max, answer.count);
-  }, 0)  
+  }, 0)
   return max;
 }
 
@@ -298,7 +298,7 @@ DataSource.prototype.unrollData = function(fieldId) {
     return newCase;
   }
 
-  var cases = [];  
+  var cases = [];
   this.data.forEach(function(melaCase) {
     var values = melaCase[fieldId].split("|");
     for(var value in values) {
@@ -307,11 +307,11 @@ DataSource.prototype.unrollData = function(fieldId) {
       cases.push(newCase);
     }
   })
-  
+
   var ds = new DataSource();
   ds.fields = this.fields;
   ds.data = cases;
-  
+
   return ds;
 }
 
@@ -327,14 +327,14 @@ DataSource.prototype.groupBy = function(fieldId, fieldName, mappingFunc) {
     }
     clusters[value].data.push(melaCase)
   });
-  
+
   var result = [];
   for(var value in clusters) {
     var ds = clusters[value];
     ds.name = value;
     result.push(ds);
   }
-  
+
   return result;
 }
 
@@ -394,10 +394,10 @@ function comparator(accessor, order) {
       return o;
     }
   }
-  
+
   return function(a, b) {
     return ord * (accessor(a) - accessor(b));
-  }      
+  }
 }
 
 window.onload = function() {
@@ -407,15 +407,18 @@ window.onload = function() {
   options.add("clusterByCountry", "Cluster By Country", false, "CLUSTER");
   options.add("clusterByField", "Cluster By Field of Activity", false, "CLUSTER");
   options.addBreak();
-  
+
   for(var fieldName in Fields) {
     var fieldLabel = fieldName.match(/[A-Z][a-z]+/g).join(" ");
     options.add(fieldName, fieldLabel, false);
   }
-  
+
   var dataSource = new DataSource();
-  dataSource.load("data/Field05.csv", function() {    
-    
+  dataSource.load("data/Field05.csv", function() {
+
+
+  console.log(dataSource.data.map(function(melaCase) { return melaCase[22]; }).join('|'));
+
     var questionIdList = [];
     for(var fieldName in Fields) {
       if (options.getValue(fieldName)) questionIdList.push(Fields[fieldName]);
@@ -423,44 +426,46 @@ window.onload = function() {
     //
     //var questionIdList = [23];
 
-    //dataSource = dataSource.unrollData(Fields.FieldOfActivity);    
+    //dataSource = dataSource.unrollData(Fields.FieldOfActivity);
     //var clusters = dataSource.groupBy(Fields.FieldOfActivity, "country");
     var clusters;
-    
-   if (options.getValue("clusterByCountry")) {      
-      clusters = dataSource.groupBy(Fields.Country, "country", function(country) { return dataSource.countryNameToIso(country); });      
+
+   if (options.getValue("clusterByCountry")) {
+      clusters = dataSource.groupBy(Fields.Country, "country", function(country) { return dataSource.countryNameToIso(country); });
       clusters.sort(function(a, b) { return -(a.data.length - b.data.length)}); //sort descending by num of cases
-    } 
+    }
     else if (options.getValue("clusterByField")) {
       clusters = dataSource.groupBy(Fields.FieldOfActivity, "field");
       clusters = clusters.filter(function(cluster) { return cluster.data.length > 1; });
-      clusters.sort(function(a, b) { return -(a.data.length - b.data.length)});  //sort descending by num of cases     
+      clusters.sort(function(a, b) { return -(a.data.length - b.data.length)});  //sort descending by num of cases
     }
     else {
       clusters = dataSource.groupBy(Fields.Year, "year", function(year) { return ("" + year).substr(0, 4) });
-      clusters.sort(function(a, b) { 
+      clusters.sort(function(a, b) {
         if (a.name > b.name) return 1;
         if (a.name < b.name) return -1;
         return 0;
-      });       
+      });
     }
-        
-    
-    
+
+
+
     //remove clusters with only one case
-    //clusters = clusters.filter(function(a) { return a.data.length > 1}); 
-    
+    //clusters = clusters.filter(function(a) { return a.data.length > 1});
+
     var pageWdth = 950;
     var widthPerCluster = pageWdth*0.75 / clusters.length;
-    
+
     var stats = d3.select("#statsContainer")
                 .append("svg")
                 .attr("width", pageWdth)
                 .attr("height", 450)
-                .attr("id", "stats");    
-    
+                .attr("id", "stats");
+
+    stats.attr("height", 500)
+
     var dx = 0;
-    var dy = 50;        
+    var dy = 50;
     questionIdList.forEach(function(questionId) {
       var questionGroup = stats.append('g').attr('id', 'q_' + questionId);
 
@@ -471,7 +476,7 @@ window.onload = function() {
         .text(dataSource.fields[questionId].name);
 
       var possibleAnswers = dataSource.findAndCountAllPossibleValues(questionId, "value");
-      
+
       //keep values matching more than one case
       var topAnswers = possibleAnswers.filter(function(v) { return v.count > 1; });
 
@@ -494,27 +499,27 @@ window.onload = function() {
             .attr("y", dy + 11 * i + 8)
             .attr("class", "smallLabel")
             .text(answer.value);
-        })      
+        })
       }
-      
+
       dx = 0;
-      
+
       function findAnswerIndex(answers, value) {
         for(var i=0; i<answers.length; i++) {
           if (answers[i].value == value) return i;
         }
         return -1;
       }
-      
+
       var globalMax = 0;
-      
+
       clusters.forEach(function(cluster, clusterIndex) {
-        globalMax = Math.max(globalMax, cluster.findAndCountAllPossibleValuesMax(questionId));        
+        globalMax = Math.max(globalMax, cluster.findAndCountAllPossibleValuesMax(questionId));
       });
-      
+
       clusters.forEach(function(cluster, clusterIndex) {
         var clusterAnswers = cluster.findAndCountAllPossibleValues(questionId);
-        
+
         clusterAnswers = topAnswers.map(function(answer, i) {
           var answerIndex = findAnswerIndex(clusterAnswers, answer.value);
           return {
@@ -522,10 +527,10 @@ window.onload = function() {
             count : (answerIndex == -1) ? 0 : clusterAnswers[answerIndex].count
           }
         })
-        
-        clusterAnswers.forEach(function(answer, answerIndex) {          
+
+        clusterAnswers.forEach(function(answer, answerIndex) {
           var value = answer.count / globalMax;
-          
+
           if (options.getValue("normalize"))
             value = answer.count / cluster.data.length;
           if (answerIndex !== -1) {
@@ -534,14 +539,14 @@ window.onload = function() {
               .attr("x", dx + widthPerCluster * clusterIndex)
               .attr("y", dy + 11 * answerIndex)
               .attr("width", widthPerCluster-1)
-              .attr("height", 10);              
+              .attr("height", 10);
           }
         })
-        
+
       });
 
       dy += topAnswers.length * 11 + 65;
-      
+
       clusters.forEach(function(cluster, i) {
         stats.append("text")
           .attr("fill", "#000000")
