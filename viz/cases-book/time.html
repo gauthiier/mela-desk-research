@@ -114,6 +114,34 @@ Correlated survey fields:
 window.onload = function() {
   var isoCountries;
   var countryMap;
+  
+  function groupCasesBy(data, fieldId, fieldName, mappingFunc) {
+    var clusters = {};
+
+    data.forEach(function(melaCase) {
+      var value = melaCase[fieldId];
+      if (mappingFunc)
+        value = mappingFunc(value);
+      if (!clusters[value]) {
+        clusters[value] = [];
+      }
+      clusters[value].push(melaCase)
+    });
+    var result = [];
+    for(var value in clusters) {
+      var list = {  cases:clusters[value] };
+      list[fieldName] = value;
+      result.push(list);
+    }
+    return result;
+  }
+
+  function parseYear(yearStr) {
+    var yearNumber = Number(yearStr.substr(0, 4));
+    if (isNaN(yearNumber)) return "  NA";
+    return yearNumber;
+  }
+  
 
   var options = new Options();
   options.add("normalize", "Normalize answers per year", true);
@@ -137,39 +165,7 @@ window.onload = function() {
   function loadCountryList() {
     d3.text("data/iso-countries.csv", function(list) {
       isoCountries = CSVToArray(list);
-      loadMap();
-    });
-  }
-
-  function loadMap() {
-    var xy = d3.geo.mercator();
-    var path = d3.geo.path().projection(xy);
-
-    //scale the map a bit bigger than the div, we don't need Greenland and Antarctic
-    xy.scale(950+100);
-    var translate = xy.translate();
-    translate[0] = (950+100) * 0.5 - 50;
-    translate[1] = 650 * 0.6 + 20;
-    xy.translate(translate);
-
-    countryMap = d3.select("#countryMapContainer")
-      .append("svg:svg")
-      .append("svg:g")
-        .attr("id", "countryMap");
-
-    d3.json("data/world-countries-iso.json", function(collection) {
-      countryMap
-        .selectAll("path")
-          .data(collection.features)
-        .enter().append("svg:path")
-          .attr("d", path)
-          .attr("fill", "rgb(255, 255, 255)")
-          .attr("id", function(d) { return "iso_" + d.iso; })
-          .attr("class", "country")
-        .append("svg:title")
-          .text(function(d) { return d.properties.name; });
-
-        loadCasesData();
+      loadCasesData();
     });
   }
 
@@ -206,41 +202,6 @@ window.onload = function() {
       var skyBlue = chroma.hex('#55c1dc');
       var tomatoRed = chroma.hex('#eb6909');
       var cyan = chroma.hex('#00EDBA');
-
-      function highlight(countingFunction) {
-        countryMap
-            .selectAll("path.country")
-            .attr("fill", "rgb(255, 255, 255)");
-
-
-        var casesCountPerCountry = {};
-        data.forEach(function(melaCase) {
-          var country = melaCase[5];
-          var iso = countryNameToIso(country);
-          if (!casesCountPerCountry[iso]) {
-            casesCountPerCountry[iso] = 0;
-          }
-          casesCountPerCountry[iso] += countingFunction(melaCase);
-        })
-
-        var maxCount = _.max(casesCountPerCountry, function(count) { return count; });
-
-        //casesCountPerCountry.forEach(function(count, iso) {
-        for(var iso in casesCountPerCountry) {
-          var count = casesCountPerCountry[iso]
-          d3.select("#iso_" + iso)
-            .attr("fill", white.interpolate(0.5 + 0.5*count/maxCount, tomatoRed, 'hsl'));
-        }
-      }
-
-      //each case counts as one
-      function countCases(melaCase) { return 1; }
-
-      function indentityConstruction(melaCase) {
-        return 0;
-      }
-
-      highlight(countCases);
 
       //STATS
 
@@ -402,8 +363,6 @@ window.onload = function() {
     <h1>Timeline</h1>
     <h1>Answers histogram</h1>
     <div id="statsContainer"></div>
-    <h1 class="tomatoOrange">Geographical mapping of all Field05 cases</h1>
-    <div id="countryMapContainer"></div>
   </div>
 </body>
 </html>

@@ -1,0 +1,304 @@
+<html>
+<head>
+<title>MeLa Cases - time</title>
+<meta name = "viewport" content = "initial-scale = 1.0">
+<style type="text/css">
+
+@font-face { font-family: Abel; src: url('fonts/Abel/Abel-Regular.ttf'); }
+@font-face { font-family: Marvel; font-weight: bold; src: url('fonts/Marvel/Marvel-Bold.ttf'); }
+
+/*
+Size 140mm x 205mm
+
+650 x 950
+
+Background - creamy - #edebdd
+Features - sky blue - #55c1dc
+Features - grey - #a5a49a
+Features - white - #ffffff
+Text - black #000000
+
+Field 01 - dark green - #46a12a
+Field 02 - light green - #8ebc11
+Field 03 - yellow - #fed61e
+Field 04 - orange - #f39404
+Field 05 - tomato - #eb6909
+Field 06 - red - #e3001b
+*/
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Marvel, sans-serif;
+  margin: 1em;
+  background: #edebdd /*creamy*/;
+}
+
+p {
+  font-family: Abel, sans-serif;
+}
+
+h1 {
+  background: #FFF;
+  padding: 0.25em 0.5em;
+  border-bottom: 0.25em solid #55c1dc;
+  margin-bottom: 1px;
+}
+
+h1.tomatoOrange {
+  border-bottom: 0.25em solid #eb6909;
+}
+
+#page {
+  width: 950px;
+  margin:0 auto;
+}
+
+#options {
+  margin-bottom: 0.5em;
+}
+
+#countryMapContainer {
+  width: 950px;
+  height: 650px;
+}
+
+path.country {
+  xfill: #55c1dc;
+  xfill: #FFF;
+}
+
+text.smallLabel {
+  font-size: 60%;
+  text-transform: uppercase;
+  font-family: Abel ;
+}
+
+text.mediumLabel {
+  font-size: 70%;
+  text-transform: uppercase;
+  font-family: Abel ;
+}
+
+
+label input {
+  margin-right: 1em;
+  margin-left: 2em;
+}
+
+label:first-child input {
+  margin-left: 0;
+}
+
+label {
+  font-size: 85%;
+}
+
+</style>
+<script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
+<script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
+<script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
+<script type="text/javascript" src="js/underscore.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/options.js"></script><!-- options at the top of the page -->
+<script type="text/javascript" src="js/common.js"></script><!-- options at the top of the page -->
+<script type="text/javascript">
+/*
+Correlated survey fields:
+
+- Description
+
+*/
+window.onload = function() {
+  var pageWdth = 950;
+
+  var options = new Options();
+
+  var ds = new DataSource();
+  ds.load("data/Field05.csv", function() {
+    
+    var options = new Options();
+    options.add("before", "Count words before word", false);
+    options.add("remove4", "Remove words shorter than 4 letters", false);
+    options.add("removeSingle", "Remove single connections", false);
+    
+    
+    function objToArray(o) {
+      var result = [];
+      for(var i in o) {
+        result.push(o[i]);
+      }
+      return result;
+    }
+
+    function byCountDesc(a, b) {
+      return b.count - a.count;
+    }
+
+    function byPowerDesc(a, b) {
+      return b.power - a.power;
+    }
+
+
+    function analizeTextField(fieldId) {
+      var words = {};
+      ds.data.forEach(function(melaCase) {
+        var caseWords = melaCase[fieldId].split(/[^a-zA-Z]/);
+        for(var i=0; i<caseWords.length; i++) {
+          var word = caseWords[i];
+          if (options.getValue("remove4") && (word.length < 4)) continue;
+          else if (word.length < 3) continue;          
+          if (!words[word]) {
+            words[word] = { name : word, count: 0, next : {}};
+          }
+          words[word].count++;
+
+          if (i < caseWords.length - 1) {
+            var nextWord = caseWords[i + 1];
+            if (options.getValue("remove4") && (nextWord.length < 4)) continue;
+            else if (nextWord.length < 3) continue;  
+            if (!words[word].next[nextWord]) {
+              words[word].next[nextWord] = { name : nextWord, count: 0, next : {}};
+            }
+            words[word].next[nextWord].count++;
+          }
+        }
+        //console.log(value.split()
+      })
+
+      words = objToArray(words);
+      words.sort(byCountDesc);
+      words.forEach(function(w) {
+        w.next = objToArray(w.next);
+        w.next.sort(byCountDesc);
+        if (w.next.length == 0) return;
+        w.power = w.count / w.next[0].count;
+        //if (w.next[0].count == 1) w.power = 0;
+      });
+
+      words.sort(byPowerDesc);
+
+      var stats = d3.select("#statsContainer")
+
+      stats.append("h2")
+      .text(ds.fields[fieldId].name)
+
+      var dotSyntax = "";
+      
+      for(var i=0; i<50; i++) {
+        if (words[i].power < 12) break;
+        if (options.getValue("removeSingle") && words[i].next[0].count == 1) continue;
+
+        var str = "<b>" + words[i].name +" (" + words[i].count + ")" + "</b>" + " + ";
+        for(var j=0; j<Math.min(words[i].next.length, 10); j++) {
+          str += words[i].next[j].name + " (" + words[i].next[j].count + "), ";
+          
+          if (j < 5) {
+            dotSyntax += words[i].name + " -> " + words[i].next[j].name + "\n";
+          }
+        }
+        
+        
+        var p = stats.append("p")[0][0];
+        p.innerHTML = str;
+
+
+        console.log(words[i].name, words[i].next[0].name, words[i].power);
+      }
+      
+      console.log(dotSyntax);
+      
+      stats.append("br");
+      stats.append("br");
+    }
+
+    function analizeTextField2(fieldId) {
+      var words = {};
+      ds.data.forEach(function(melaCase) {
+        var caseWords = melaCase[fieldId].split(/[^a-zA-Z]/);
+        for(var i=0; i<caseWords.length; i++) {
+          var word = caseWords[i];
+          if (options.getValue("remove4") && (word.length < 4)) continue;
+          else if (word.length < 3) continue;            
+          if (!words[word]) {
+            words[word] = { name : word, count: 0, next : {}};
+          }
+          words[word].count++;
+
+          if (i > 0) {
+            var nextWord = caseWords[i - 1];
+            if (options.getValue("remove4") && (nextWord.length < 4)) continue;
+            else if (nextWord.length < 3) continue;              
+            if (!words[word].next[nextWord]) {
+              words[word].next[nextWord] = { name : nextWord, count: 0, next : {}};
+            }
+            words[word].next[nextWord].count++;
+          }
+        }
+        //console.log(value.split()
+      })
+
+      words = objToArray(words);
+      words.sort(byCountDesc);
+      words.forEach(function(w) {
+        w.next = objToArray(w.next);
+        w.next.sort(byCountDesc);
+        if (w.next.length == 0) return;
+        w.power = w.count / w.next[0].count;
+        //if (w.next[0].count == 1) w.power = 0;
+      });
+
+      words.sort(byPowerDesc);
+
+      var stats = d3.select("#statsContainer")
+
+      stats.append("h2")
+      .text(ds.fields[fieldId].name)
+
+      for(var i=0; i<50; i++) {
+        if (words[i].power < 12) break;
+        
+
+        if (options.getValue("removeSingle") && words[i].next[0].count == 1) continue;
+
+        var str = ""
+        for(var j=0; j<Math.min(words[i].next.length, 10); j++) {          
+          str += words[i].next[j].name + " (" + words[i].next[j].count + "), ";
+        }
+        
+        str += " + <b>" + words[i].name +" (" + words[i].count + ")" + "</b>";
+        
+        var p = stats.append("p")[0][0];
+        p.innerHTML = str;
+
+
+        console.log(words[i].name, words[i].next[0].name, words[i].power);
+      }
+      
+      stats.append("br");
+      stats.append("br");
+    }
+    
+    if (options.getValue("before")) {
+      analizeTextField2(Fields.Description);
+      analizeTextField2(Fields.WhyIsItOfInterestForMeLAsResearchField05);        
+    }
+    else {
+      analizeTextField(Fields.Description);
+      analizeTextField(Fields.WhyIsItOfInterestForMeLAsResearchField05);              
+    }
+    
+  })
+}
+</script>
+</head>
+<body>
+  <div id="page">
+    <div id="options"></div>
+    <h1>Text</h1>
+    <div id="statsContainer"></div>
+  </div>
+</body>
+</html>

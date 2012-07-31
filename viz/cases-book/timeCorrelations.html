@@ -1,0 +1,253 @@
+<html>
+<head>
+<title>MeLa Cases - time</title>
+<meta name = "viewport" content = "initial-scale = 1.0">
+<style type="text/css">
+
+@font-face { font-family: Abel; src: url('fonts/Abel/Abel-Regular.ttf'); }
+@font-face { font-family: Marvel; font-weight: bold; src: url('fonts/Marvel/Marvel-Bold.ttf'); }
+
+/*
+Size 140mm x 205mm
+
+650 x 950
+
+Background - creamy - #edebdd
+Features - sky blue - #55c1dc
+Features - grey - #a5a49a
+Features - white - #ffffff
+Text - black #000000
+
+Field 01 - dark green - #46a12a
+Field 02 - light green - #8ebc11
+Field 03 - yellow - #fed61e
+Field 04 - orange - #f39404
+Field 05 - tomato - #eb6909
+Field 06 - red - #e3001b
+*/
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Marvel, sans-serif;
+  margin: 1em;
+  background: #edebdd /*creamy*/;
+}
+
+p {
+  font-family: Abel, sans-serif;
+}
+
+h1 {
+  background: #FFF;
+  padding: 0.25em 0.5em;
+  border-bottom: 0.25em solid #55c1dc;
+  margin-bottom: 1px;
+}
+
+h1.tomatoOrange {
+  border-bottom: 0.25em solid #eb6909;
+}
+
+#page {
+  width: 950px;
+  margin:0 auto;
+}
+
+#options {
+  margin-bottom: 0.5em;
+}
+
+#countryMapContainer {
+  width: 950px;
+  height: 650px;
+}
+
+path.country {
+  xfill: #55c1dc;
+  xfill: #FFF;
+}
+
+text.smallLabel {
+  font-size: 60%;
+  text-transform: uppercase;
+  font-family: Abel ;
+}
+
+text.mediumLabel {
+  font-size: 70%;
+  text-transform: uppercase;
+  font-family: Abel ;
+}
+
+
+label input {
+  margin-right: 1em;
+  margin-left: 2em;
+}
+
+label:first-child input {
+  margin-left: 0;
+}
+
+label {
+  font-size: 85%;
+}
+
+</style>
+<script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
+<script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
+<script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
+<script type="text/javascript" src="js/underscore.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/options.js"></script><!-- options at the top of the page -->
+<script type="text/javascript" src="js/common.js"></script><!-- options at the top of the page -->
+<script type="text/javascript">
+/*
+Correlated survey fields:
+
+- Field of activity 8 c
+- Year 10 t
+- Focus of technology 23 r
+- Type of Media Exhibited 26 c
+- Actions and Mechanics of interaction 27 ta
+- Audience Engagement 34 rng
+- Exhibition Elements 36 rng
+- Technology Metaphor 37 rng
+
+*/
+window.onload = function() {
+  var pageWdth = 950;
+
+  var options = new Options();
+  
+  var ds = new DataSource();
+  ds.load("data/Field05.csv", function() {
+    var fieldsOfActivity = ds.findAllPossibleValues(ds.data, Fields.FieldOfActivity);
+    var data = ds.unrollData(ds.data, Fields.FieldOfActivity);
+    data = ds.unrollData(data, Fields.TypeOfMediaExhibited);
+    var r = ds.correlation(data, Fields.FieldOfActivity, Fields.TypeOfMediaExhibited);
+    
+    var activities = ds.findAllPossibleValues(data, Fields.FieldOfActivity);
+    var typesOfMedia = ds.findAllPossibleValues(data, Fields.TypeOfMediaExhibited);
+    
+    var matches = [];
+    
+    for(var i=0; i<activities.length; i++) {
+      for(var j=0; j<typesOfMedia.length; j++) {
+        var activity = activities[i].toLowerCase();
+        var typeOfMedia = typesOfMedia[j].toLowerCase();
+        var matchCount = 0;
+        ds.data.forEach(function(melaCase) {
+          if ((melaCase[Fields.FieldOfActivity].toLowerCase().split("|").indexOf(activity) != -1) 
+          && (melaCase[Fields.TypeOfMediaExhibited].toLowerCase().split("|").indexOf(typeOfMedia) != -1)) {
+            matchCount++;
+          }
+        })
+        if (activity == "new media")  console.log(typeOfMedia, matchCount);
+        if (matchCount > 0) {
+          matches.push({
+            activity : activity,
+            typeOfMedia : typeOfMedia,
+            name : activity + " + " + typeOfMedia,
+            count : matchCount
+          })
+        }
+      }
+    }
+    
+    matches.sort(function(a, b) { return -(a.count - b.count)});
+    
+    function countCases(data, fieldId, fieldValue) {
+      return _.filter(data, function(melaCase) {
+        return melaCase[fieldId].toLowerCase().split("|").indexOf(fieldValue) != -1;
+      }).length;
+    }
+    
+    //console.log("GLOBAL STATS");
+    //matches.forEach(function(o) {
+    //  var n = ds.data.length;
+    //  var percent = Math.floor(o.count / n * 100);
+    //  if (percent > 0)
+    //    console.log(percent + "% - " + o.name);
+    //});
+    
+    matches = matches.filter(function(m) {
+      var n = countCases(ds.data, Fields.FieldOfActivity, m.activity.toLowerCase());
+      return Math.floor(m.count / n * 100) > 0;
+    })
+    
+    
+    var matchedActivities = [];
+    var matchedTypesOfMedia = [];
+    matches.forEach(function(m) {
+      if (matchedActivities.indexOf(m.activity.toLowerCase()) == -1) matchedActivities.push(m.activity.toLowerCase());
+      if (matchedTypesOfMedia.indexOf(m.typeOfMedia.toLowerCase()) == -1) matchedTypesOfMedia.push(m.typeOfMedia.toLowerCase());      
+    })
+    
+    var stats = d3.select("#statsContainer")
+                .append("svg")
+                .attr("width", pageWdth)
+                .attr("height", 530)
+                .attr("id", "stats");
+    
+    for(var i=0; i<matchedTypesOfMedia.length; i++) {
+      stats.append("text")
+      .attr("fill", "#000000")
+      .attr("x", (matchedTypesOfMedia.length - i - 1) * 101)
+      .attr("y", 50 - 5)
+      .text(matchedTypesOfMedia[i].substr(0, 11));
+    }
+    
+    for(var i=0; i<matchedActivities.length; i++) {
+      stats.append("text")
+      .attr("fill", "#000000")
+      .attr("x", matchedTypesOfMedia.length * 101 + 5)
+      .attr("y", 50 + i*21 + 15)
+      .text(matchedActivities[i] + " [" + countCases(ds.data, Fields.FieldOfActivity, matchedActivities[i].toLowerCase()) + "]");
+    }
+    
+    for(var i=0; i<matches.length; i++) {
+      var m = matches[i];
+      var x = matchedTypesOfMedia.length - matchedTypesOfMedia.indexOf(m.typeOfMedia.toLowerCase()) - 1;
+      var y = matchedActivities.indexOf(m.activity);
+      
+      var n = countCases(ds.data, Fields.FieldOfActivity, matches[i].activity.toLowerCase());
+      var verbose = false;
+      if (matches[i].activity == "art") verbose = true;
+      if (m.typeOfMedia == 0) continue;
+      if (verbose == true) console.log(i, m.typeOfMedia);
+        
+      var value = m.count / n;
+      
+      stats.append("rect")
+        .attr("fill", Colors.White.interpolate(value, Colors.SkyBlue, 'hsl'))
+        .attr("x", x * 101)
+        .attr("y", 50 + y * 21)
+        .attr("width", 100)
+        .attr("height", 20);
+        
+      stats.append("text")
+      .attr("fill", "#000000")
+      .attr("x", x * 101 + 3)
+      .attr("y", 50 + y * 21 + 15)
+      .attr("class", "mediumLabel")
+      .text(Math.floor((value * 100)) + " %");
+            
+    }
+    
+    console.log(matchedTypesOfMedia, matchedActivities);
+  })
+}
+</script>
+</head>
+<body>
+  <div id="page">
+    <div id="options"></div>
+    <h1>Timeline Correlations</h1>
+    <div id="statsContainer"></div>
+  </div>
+</body>
+</html>
