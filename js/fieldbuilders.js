@@ -279,7 +279,7 @@ CheckboxFieldBuilder.prototype.getValue = function() {
 function RadioFieldBuilder(field, data) {
   this.field = field;
   this.options = field.constraints.split("|");
-  this.selectedOptions = data ? data.split(",") : [];
+  this.selectedOptions = data ? data.split("|") : [];
   for(var i=0; i<this.selectedOptions.length; i++) {
     this.selectedOptions[i] = this.selectedOptions[i].trim();
   }
