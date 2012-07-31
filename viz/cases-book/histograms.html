@@ -1,0 +1,570 @@
+<html>
+<head>
+<title>MeLa Cases - histograms</title>
+<style type="text/css">
+
+@font-face { font-family: Abel; src: url('fonts/Abel/Abel-Regular.ttf'); }
+@font-face { font-family: Marvel; font-weight: bold; src: url('fonts/Marvel/Marvel-Bold.ttf'); }
+
+/*
+Size 140mm x 205mm
+
+650 x 950
+
+Background - creamy - #edebdd
+Features - sky blue - #55c1dc
+Features - grey - #a5a49a
+Features - white - #ffffff
+Text - black #000000
+
+Field 01 - dark green - #46a12a
+Field 02 - light green - #8ebc11
+Field 03 - yellow - #fed61e
+Field 04 - orange - #f39404
+Field 05 - tomato - #eb6909
+Field 06 - red - #e3001b
+*/
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Marvel, sans-serif;
+  margin: 1em;
+  background: #edebdd /*creamy*/;
+}
+
+p {
+  font-family: Abel, sans-serif;
+}
+
+h1 {
+  background: #FFF;
+  padding: 0.25em 0.5em;
+  border-bottom: 0.25em solid #55c1dc;
+  margin-bottom: 1px;
+}
+
+#page {
+  width: 950px;
+  margin:0 auto;
+}
+
+#options {
+  margin-bottom: 0.5em;
+  overflow: auto;
+}
+
+#options label {
+  font-size: 85%;
+  margin-right: 1em;
+  margin-bottom: 0.5em;
+  float: left;
+}
+
+#options label input {
+  margin-right: 1em;
+  xmargin-left: 2em;  
+}
+
+#options label:first-child input {
+  margin-left: 0;
+}
+
+
+#options hr {
+  margin: 0.5em 0;
+  clear: both;
+}
+
+text.smallLabel {
+  font-size: 60%;
+  text-transform: uppercase;
+  font-family: Abel ;
+}
+
+</style>
+<script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
+<script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
+<script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
+<script type="text/javascript" src="js/underscore.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/options.js"></script><!-- functional programming utils -->
+<script type="text/javascript">  
+
+//-----------------------------------------------------------------------------
+
+var Fields = {
+  NameOfTheInstitution : 4, //TEXTFIELD
+  Country : 5, //COUNTRYLIST
+  City : 6, //TEXTFIELD
+  TypeOfInstitution : 7, //CHECKBOX
+  FieldOfActivity : 8, //CHECKBOX
+  FocusOfInstitution : 9, //CHECKBOX
+  Year : 10, //TEXTFIELD
+  Links : 11, //TEXTAREA
+  PrincipalPartner : 12, //LIST
+  InterestedPartner : 13, //LIST
+  LinksForPartnersOnly : 14, //TEXTAREA
+  Name : 16, //TEXTFIELD
+  Topic : 17, //RADIO
+  Year : 18, //TEXTFIELD
+  NameContactOfCuratorOrganiser : 19, //TEXTFIELD
+  Links : 20, //TEXTAREA
+  Description : 22, //TEXTAREA
+  FocusOfTechnology : 23, //RADIO
+  LocationOfTechnologyUse : 24, //CHECKBOX
+  TimeOfTechnologyUse : 25, //CHECKBOX
+  TypeOfMediaExhibited : 26, //CHECKBOX
+  ActionsAndMechanicsOfInteraction : 27, //TEXTAREA
+  TargetGroup : 28, //RADIO
+  WhyIsItOfInterestForMelasResearchField05 : 29, //TEXTAREA
+  ImpactUserPerspective : 30, //TEXTAREA
+  ImpactInstitutionOrganisationPerspective : 31, //TEXTAREA
+  AudienceInvolvment : 33, //RADIO
+  AudienceEngagement : 34, //RANGE
+  AudiencePerception : 35, //CHECKBOX
+  ExhibitionElements : 36, //RANGE
+  TechnologyMetaphor : 37, //RANGE
+  IdentityConstruction : 39, //RADIO
+  Representation : 40, //RADIO
+  ConceptionOfCulturalRepresentations : 41, //RADIO
+  AudienceOfCulturalRepresentations : 42, //RADIO
+  Multinationalism : 43, //RADIO
+  Contemporaneousness : 44, //RADIO
+  Provocativeness : 45, //RADIO
+  Stance : 46, //RANGE
+}
+
+var Colors = {
+  White : chroma.hex('#fff'),
+  SkyBlue : chroma.hex('#55c1dc'),
+  TomatoRed : chroma.hex('#eb6909'),
+  Cyan : chroma.hex('#00EDBA')  
+}
+
+//-----------------------------------------------------------------------------
+
+function DataSource(data) {
+  this.data = data || [];
+  this.isoCountries = [];
+  this.loadCountryList();
+}
+
+DataSource.prototype.loadCountryList = function() {
+  var self = this;
+  d3.text("data/iso-countries.csv", function(list) {
+    self.isoCountries = CSVToArray(list);
+    
+    if (self.onLoadCallback) {
+      self.onLoadCallback();
+      self.onLoadCallback = null;
+    }
+  });
+}
+
+DataSource.prototype.load = function(file, callback) {
+  var self = this;
+  d3.text(file, function(dataStr) {
+    var data = CSVToArray(dataStr);
+
+    var info = [];
+    info.push("Field05 : " + data.length + " cases");
+    var verbose = false;
+
+    if (verbose) console.log(info);
+    //build list of all fields and their types
+    var fieldNames = data[0];
+    var fieldTypes = data[2];
+    var fieldValues = data[3];
+    var fields = [];
+    for(var i in fieldNames) {
+      if (fieldTypes[i] != '') {
+        fields[i] = {
+          name : fieldNames[i],
+          type : fieldTypes[i],
+          values : fieldValues[i].split("|")
+        }
+        if (verbose) console.log(i, fieldNames[i], fieldTypes[i])
+      }
+      else {
+        fields[i] = null;
+      }
+    }
+    data.splice(0, 4); //remove metadata
+    
+    self.data = data;
+    self.fields = fields;
+    
+    if (self.isoCountries.length > 0) callback();
+    else self.onLoadCallback = callback; //wait for iso countries to finish loading
+  });
+}
+
+DataSource.prototype.printFields = function() {
+  var str = '';
+  fields.forEach(function(field, i) {
+    if (!field) return;
+    str += toTitleCase(field.name).replace(/\s/g, '');
+    str += ' : ' + i + ', //' + field.type;
+    str += '\n';
+  })
+}
+
+DataSource.prototype.countryNameToIso = function(name) {
+  var nameUpper = name.toUpperCase();
+  if (name == "United States of America") {
+    nameUpper = "UNITED STATES";
+  }
+  var matches = _.filter(this.isoCountries, function(country) {
+    return nameUpper == country[0];
+  })
+  if (matches.length > 0) {
+    return matches[0][1];
+  }
+  else {
+    console.log("No ISO found for " + name);
+    return "Unknown";
+  }
+}
+
+DataSource.prototype.findAndCountAllPossibleValues = function(fieldId, sortMode) {
+  
+  sortMode = sortMode || "count";
+  
+  function getValues(fieldId) {
+    return function(melaCase) {
+      return melaCase[fieldId];
+    }
+  }
+  
+  function sorterDesc(property) {
+    return function(a, b) {
+      return -(a[property] - b[property]);
+    }
+  }
+  
+  var casesValues = this.data.map(getValues(fieldId));
+  var values = {};
+  
+  function addValue(value) {
+    if (!values[value]) values[value] = 0;
+    values[value]++;
+  }
+  
+  casesValues.forEach(function(value) {
+    if (value.indexOf("|") !== -1)
+      value.split("|").forEach(addValue);    
+    else 
+      addValue(value);
+  })
+  
+  var result = [];
+  for(var value in values) {
+    result.push({value : value, count : values[value]});
+  }
+  
+  return result.sort(sorterDesc(sortMode));
+}
+
+DataSource.prototype.findAndCountAllPossibleValuesMax = function(questionId) {
+  var answers = this.findAndCountAllPossibleValues(questionId);
+  var max = answers.reduce(function(max, answer) {
+    return Math.max(max, answer.count);
+  }, 0)  
+  return max;
+}
+
+
+DataSource.prototype.findAllPossibleValues = function(fieldId) {
+  return this.findAndCountAllPossibleValues(fieldId).map(function(o) { return o.value; });
+}
+
+DataSource.prototype.valuesToNumbers = function(fieldId) {
+  var possibleValues = this.findAllPossibleValues(fieldId);
+  return this.data.map(function(melaCase) {
+    console.log(melaCase[fieldId], possibleValues.indexOf(melaCase[fieldId]));
+    return possibleValues.indexOf(melaCase[fieldId]);
+  })
+}
+
+DataSource.prototype.unrollData = function(fieldId) {
+  function clone(melaCase) {
+    var newCase = {};
+    for(var i in melaCase) {
+      newCase[i] = melaCase[i];
+    }
+    return newCase;
+  }
+
+  var cases = [];  
+  this.data.forEach(function(melaCase) {
+    var values = melaCase[fieldId].split("|");
+    for(var value in values) {
+      var newCase = clone(melaCase);
+      newCase[fieldId] = values[value];
+      cases.push(newCase);
+    }
+  })
+  
+  var ds = new DataSource();
+  ds.fields = this.fields;
+  ds.data = cases;
+  
+  return ds;
+}
+
+DataSource.prototype.groupBy = function(fieldId, fieldName, mappingFunc) {
+  var clusters = {};
+
+  this.data.forEach(function(melaCase) {
+    var value = melaCase[fieldId];
+    if (mappingFunc)
+      value = mappingFunc(value);
+    if (!clusters[value]) {
+      clusters[value] = new DataSource();
+    }
+    clusters[value].data.push(melaCase)
+  });
+  
+  var result = [];
+  for(var value in clusters) {
+    var ds = clusters[value];
+    ds.name = value;
+    result.push(ds);
+  }
+  
+  return result;
+}
+
+DataSource.prototype.countOptions = function(fieldId) {
+  var count = [];
+  var possibleValues = this.fields[fieldId].values;
+
+  if (fields[fieldId].type == "RANGE") {
+    for(var i=0; i<5; i++)
+      count.push(0);
+  }
+  else {
+    possibleValues.forEach(function(value, i) {
+      count.push(0);
+    });
+  }
+
+  data.forEach(function(melaCase) {
+    var answer = melaCase[fieldId]
+    if (fields[fieldId].type != "RANGE") {
+      answer = answer.split("|");
+      answer.forEach(function(a) {
+        count[possibleValues.indexOf(a)]++;
+      })
+    }
+    else {
+      count[answer]++;
+    }
+  });
+  if (fields[fieldId].type == "RANGE" && count.length > 5) {
+    count.pop();
+  }
+  return count;
+}
+
+
+</script>
+<script type="text/javascript">
+
+//extracts property from an object
+function prop(name) {
+  return function(o) {
+    return o[name];
+  }
+}
+
+function prop2(name1, name2) {
+  return function(o) {
+    return o[name1][name2];
+  }
+}
+
+function comparator(accessor, order) {
+  var ord = (order == "desc") ? -1 : 1;
+  if (!accessor) {
+    accessor = function(o) {
+      return o;
+    }
+  }
+  
+  return function(a, b) {
+    return ord * (accessor(a) - accessor(b));
+  }      
+}
+
+window.onload = function() {
+  var options = new Options();
+  options.add("normalize", "Normalize Per Cluster", false);
+  options.add("clusterByYear", "Cluster By Year", false, "CLUSTER");
+  options.add("clusterByCountry", "Cluster By Country", false, "CLUSTER");
+  options.add("clusterByField", "Cluster By Field of Activity", false, "CLUSTER");
+  options.addBreak();
+  
+  for(var fieldName in Fields) {
+    var fieldLabel = fieldName.match(/[A-Z][a-z]+/g).join(" ");
+    options.add(fieldName, fieldLabel, false);
+  }
+  
+  var dataSource = new DataSource();
+  dataSource.load("data/Field05.csv", function() {    
+    
+    var questionIdList = [];
+    for(var fieldName in Fields) {
+      if (options.getValue(fieldName)) questionIdList.push(Fields[fieldName]);
+    }
+    //
+    //var questionIdList = [23];
+
+    //dataSource = dataSource.unrollData(Fields.FieldOfActivity);    
+    //var clusters = dataSource.groupBy(Fields.FieldOfActivity, "country");
+    var clusters;
+    
+   if (options.getValue("clusterByCountry")) {      
+      clusters = dataSource.groupBy(Fields.Country, "country", function(country) { return dataSource.countryNameToIso(country); });      
+      clusters.sort(function(a, b) { return -(a.data.length - b.data.length)}); //sort descending by num of cases
+    } 
+    else if (options.getValue("clusterByField")) {
+      clusters = dataSource.groupBy(Fields.FieldOfActivity, "field");
+      clusters = clusters.filter(function(cluster) { return cluster.data.length > 1; });
+      clusters.sort(function(a, b) { return -(a.data.length - b.data.length)});  //sort descending by num of cases     
+    }
+    else {
+      clusters = dataSource.groupBy(Fields.Year, "year", function(year) { return ("" + year).substr(0, 4) });
+      clusters.sort(function(a, b) { 
+        if (a.name > b.name) return 1;
+        if (a.name < b.name) return -1;
+        return 0;
+      });       
+    }
+        
+    
+    
+    //remove clusters with only one case
+    //clusters = clusters.filter(function(a) { return a.data.length > 1}); 
+    
+    var pageWdth = 950;
+    var widthPerCluster = pageWdth*0.75 / clusters.length;
+    
+    var stats = d3.select("#statsContainer")
+                .append("svg")
+                .attr("width", pageWdth)
+                .attr("height", 450)
+                .attr("id", "stats");    
+    
+    var dx = 0;
+    var dy = 50;        
+    questionIdList.forEach(function(questionId) {
+      var questionGroup = stats.append('g').attr('id', 'q_' + questionId);
+
+      stats.append("text")
+        .attr("fill", "#000000")
+        .attr("x", 2)
+        .attr("y", dy - 5)
+        .text(dataSource.fields[questionId].name);
+
+      var possibleAnswers = dataSource.findAndCountAllPossibleValues(questionId, "value");
+      
+      //keep values matching more than one case
+      var topAnswers = possibleAnswers.filter(function(v) { return v.count > 1; });
+
+      if (dataSource.fields[questionId].type == "RANGE") {
+        var values = ["5 - " + dataSource.fields[questionId].values[3], "4", "3", "2", "1 - " + dataSource.fields[questionId].values[2]];
+        values.forEach(function(possibleAnswer, i) {
+          stats.append("text")
+            .attr("fill", "#000000")
+            .attr("x", pageWdth*0.75 + 2)
+            .attr("y", dy + 11 * i + 8)
+            .attr("class", "smallLabel")
+            .text(possibleAnswer);
+        })
+      }
+      else {
+        topAnswers.forEach(function(answer, i) {
+          stats.append("text")
+            .attr("fill", "#000000")
+            .attr("x", pageWdth*0.75 + 2)
+            .attr("y", dy + 11 * i + 8)
+            .attr("class", "smallLabel")
+            .text(answer.value);
+        })      
+      }
+      
+      dx = 0;
+      
+      function findAnswerIndex(answers, value) {
+        for(var i=0; i<answers.length; i++) {
+          if (answers[i].value == value) return i;
+        }
+        return -1;
+      }
+      
+      var globalMax = 0;
+      
+      clusters.forEach(function(cluster, clusterIndex) {
+        globalMax = Math.max(globalMax, cluster.findAndCountAllPossibleValuesMax(questionId));        
+      });
+      
+      clusters.forEach(function(cluster, clusterIndex) {
+        var clusterAnswers = cluster.findAndCountAllPossibleValues(questionId);
+        
+        clusterAnswers = topAnswers.map(function(answer, i) {
+          var answerIndex = findAnswerIndex(clusterAnswers, answer.value);
+          return {
+            value : answer.value,
+            count : (answerIndex == -1) ? 0 : clusterAnswers[answerIndex].count
+          }
+        })
+        
+        clusterAnswers.forEach(function(answer, answerIndex) {          
+          var value = answer.count / globalMax;
+          
+          if (options.getValue("normalize"))
+            value = answer.count / cluster.data.length;
+          if (answerIndex !== -1) {
+            questionGroup.append("rect")
+              .attr("fill", Colors.White.interpolate(value, Colors.SkyBlue, 'hsl')) //value * scale
+              .attr("x", dx + widthPerCluster * clusterIndex)
+              .attr("y", dy + 11 * answerIndex)
+              .attr("width", widthPerCluster-1)
+              .attr("height", 10);              
+          }
+        })
+        
+      });
+
+      dy += topAnswers.length * 11 + 65;
+      
+      clusters.forEach(function(cluster, i) {
+        stats.append("text")
+          .attr("fill", "#000000")
+          .attr("x", widthPerCluster * i + 2)
+          .attr("y", dy - 51)
+          .attr("class", "smallLabel")
+          .text(cluster.name.substr(0, 8));
+      })
+      
+    })
+    
+    stats.attr("height", dy);
+  });
+}
+
+</script>
+<body>
+  <div id="page">
+    <div id="options"></div>
+    <h1>Histograms</h1>
+    <div id="statsContainer"></div>
+  </div>
+</body>
+</html>
+
+  
