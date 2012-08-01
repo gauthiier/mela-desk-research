@@ -1,376 +1,15 @@
 <html>
 <head>
 <title>MeLa Cases - histograms</title>
-<style type="text/css">
-
-@font-face { font-family: Abel; src: url('fonts/Abel/Abel-Regular.ttf'); }
-@font-face { font-family: Marvel; font-weight: bold; src: url('fonts/Marvel/Marvel-Bold.ttf'); }
-
-/*
-Size 140mm x 205mm
-
-650 x 950
-
-Background - creamy - #edebdd
-Features - sky blue - #55c1dc
-Features - grey - #a5a49a
-Features - white - #ffffff
-Text - black #000000
-
-Field 01 - dark green - #46a12a
-Field 02 - light green - #8ebc11
-Field 03 - yellow - #fed61e
-Field 04 - orange - #f39404
-Field 05 - tomato - #eb6909
-Field 06 - red - #e3001b
-*/
-
-* {
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: Marvel, sans-serif;
-  margin: 1em;
-  background: #edebdd /*creamy*/;
-}
-
-p {
-  font-family: Abel, sans-serif;
-}
-
-h1 {
-  background: #FFF;
-  padding: 0.25em 0.5em;
-  border-bottom: 0.25em solid #55c1dc;
-  margin-bottom: 1px;
-}
-
-#page {
-  width: 950px;
-  margin:0 auto;
-}
-
-#options {
-  margin-bottom: 0.5em;
-  overflow: auto;
-}
-
-#options label {
-  font-size: 85%;
-  margin-right: 1em;
-  margin-bottom: 0.5em;
-  float: left;
-}
-
-#options label input {
-  margin-right: 1em;
-  xmargin-left: 2em;
-}
-
-#options label:first-child input {
-  margin-left: 0;
-}
-
-
-#options hr {
-  margin: 0.5em 0;
-  clear: both;
-}
-
-text.smallLabel {
-  font-size: 60%;
-  text-transform: uppercase;
-  font-family: Abel ;
-}
-
-</style>
+<link rel="stylesheet" type="text/css" href="layout/style.css"/>
 <script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
 <script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
 <script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
 <script type="text/javascript" src="js/underscore.js"></script><!-- functional programming utils -->
 <script type="text/javascript" src="js/options.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/constants.js"></script><!-- column ids and colors -->
+<script type="text/javascript" src="js/datasource.js"></script><!--data loading parsing and sorting -->
 <script type="text/javascript">
-
-//-----------------------------------------------------------------------------
-
-var Fields = {
-  NameOfTheInstitution : 4, //TEXTFIELD
-  Country : 5, //COUNTRYLIST
-  City : 6, //TEXTFIELD
-  TypeOfInstitution : 7, //CHECKBOX
-  FieldOfActivity : 8, //CHECKBOX
-  //FocusOfInstitution : 9, //CHECKBOX
-  Year : 10, //TEXTFIELD
-  Links : 11, //TEXTAREA
-  PrincipalPartner : 12, //LIST
-  InterestedPartner : 13, //LIST
-  LinksForPartnersOnly : 14, //TEXTAREA
-  Name : 16, //TEXTFIELD
-  Topic : 17, //RADIO
-  Year : 18, //TEXTFIELD
-  NameContactOfCuratorOrganiser : 19, //TEXTFIELD
-  Links : 20, //TEXTAREA
-  Description : 22, //TEXTAREA
-  FocusOfTechnology : 23, //RADIO
-  LocationOfTechnologyUse : 24, //CHECKBOX
-  TimeOfTechnologyUse : 25, //CHECKBOX
-  TypeOfMediaExhibited : 26, //CHECKBOX
-  ActionsAndMechanicsOfInteraction : 27, //TEXTAREA
-  TargetGroup : 28, //RADIO
-  WhyIsItOfInterestForMelasResearchField05 : 29, //TEXTAREA
-  ImpactUserPerspective : 30, //TEXTAREA
-  ImpactInstitutionOrganisationPerspective : 31, //TEXTAREA
-  AudienceInvolvment : 33, //RADIO
-  AudienceEngagement : 34, //RANGE
-  AudiencePerception : 35, //CHECKBOX
-  ExhibitionElements : 36, //RANGE
-  TechnologyMetaphor : 37, //RANGE
-  IdentityConstruction : 39, //RADIO
-  Representation : 40, //RADIO
-  ConceptionOfCulturalRepresentations : 41, //RADIO
-  AudienceOfCulturalRepresentations : 42, //RADIO
-  Multinationalism : 43, //RADIO
-  Contemporaneousness : 44, //RADIO
-  Provocativeness : 45, //RADIO
-  Stance : 46, //RANGE
-}
-
-var Colors = {
-  White : chroma.hex('#fff'),
-  SkyBlue : chroma.hex('#55c1dc'),
-  TomatoRed : chroma.hex('#eb6909'),
-  Cyan : chroma.hex('#00EDBA')
-}
-
-//-----------------------------------------------------------------------------
-
-function DataSource(data) {
-  this.data = data || [];
-  this.isoCountries = [];
-  this.loadCountryList();
-}
-
-DataSource.prototype.loadCountryList = function() {
-  var self = this;
-  d3.text("data/iso-countries.csv", function(list) {
-    self.isoCountries = CSVToArray(list);
-
-    if (self.onLoadCallback) {
-      self.onLoadCallback();
-      self.onLoadCallback = null;
-    }
-  });
-}
-
-DataSource.prototype.load = function(file, callback) {
-  var self = this;
-  d3.text(file, function(dataStr) {
-    var data = CSVToArray(dataStr);
-
-    var info = [];
-    info.push("Field05 : " + data.length + " cases");
-    var verbose = false;
-
-    if (verbose) console.log(info);
-    //build list of all fields and their types
-    var fieldNames = data[0];
-    var fieldTypes = data[2];
-    var fieldValues = data[3];
-    var fields = [];
-    for(var i in fieldNames) {
-      if (fieldTypes[i] != '') {
-        fields[i] = {
-          name : fieldNames[i],
-          type : fieldTypes[i],
-          values : fieldValues[i].split("|")
-        }
-        if (verbose) console.log(i, fieldNames[i], fieldTypes[i])
-      }
-      else {
-        fields[i] = null;
-      }
-    }
-    data.splice(0, 4); //remove metadata
-    
-    self.data = data;
-    self.fields = fields;
-    
-    if (self.isoCountries.length > 0) callback();
-    else self.onLoadCallback = callback; //wait for iso countries to finish loading
-  });
-}
-
-DataSource.prototype.printFields = function() {
-  var str = '';
-  fields.forEach(function(field, i) {
-    if (!field) return;
-    str += toTitleCase(field.name).replace(/\s/g, '');
-    str += ' : ' + i + ', //' + field.type;
-    str += '\n';
-  })
-}
-
-DataSource.prototype.countryNameToIso = function(name) {
-  var nameUpper = name.toUpperCase();
-  if (name == "United States of America") {
-    nameUpper = "UNITED STATES";
-  }
-  var matches = _.filter(this.isoCountries, function(country) {
-    return nameUpper == country[0];
-  })
-  if (matches.length > 0) {
-    return matches[0][1];
-  }
-  else {
-    console.log("No ISO found for " + name);
-    return "Unknown";
-  }
-}
-
-DataSource.prototype.findAndCountAllPossibleValues = function(fieldId, sortMode) {
-
-  sortMode = sortMode || "count";
-
-  function getValues(fieldId) {
-    return function(melaCase) {
-      return melaCase[fieldId];
-    }
-  }
-
-  function sorterDesc(property) {
-    return function(a, b) {
-      return -(a[property] - b[property]);
-    }
-  }
-
-  var casesValues = this.data.map(getValues(fieldId));
-  var values = {};
-
-  function addValue(value) {
-    if (!values[value]) values[value] = 0;
-    values[value]++;
-  }
-
-  casesValues.forEach(function(value) {
-    if (value.indexOf("|") !== -1)
-      value.split("|").forEach(addValue);
-    else
-      addValue(value);
-  })
-
-  var result = [];
-  for(var value in values) {
-    result.push({value : value, count : values[value]});
-  }
-
-  return result.sort(sorterDesc(sortMode));
-}
-
-DataSource.prototype.findAndCountAllPossibleValuesMax = function(questionId) {
-  var answers = this.findAndCountAllPossibleValues(questionId);
-  var max = answers.reduce(function(max, answer) {
-    return Math.max(max, answer.count);
-  }, 0)
-  return max;
-}
-
-
-DataSource.prototype.findAllPossibleValues = function(fieldId) {
-  return this.findAndCountAllPossibleValues(fieldId).map(function(o) { return o.value; });
-}
-
-DataSource.prototype.valuesToNumbers = function(fieldId) {
-  var possibleValues = this.findAllPossibleValues(fieldId);
-  return this.data.map(function(melaCase) {
-    console.log(melaCase[fieldId], possibleValues.indexOf(melaCase[fieldId]));
-    return possibleValues.indexOf(melaCase[fieldId]);
-  })
-}
-
-DataSource.prototype.unrollData = function(fieldId) {
-  function clone(melaCase) {
-    var newCase = {};
-    for(var i in melaCase) {
-      newCase[i] = melaCase[i];
-    }
-    return newCase;
-  }
-
-  var cases = [];
-  this.data.forEach(function(melaCase) {
-    var values = melaCase[fieldId].split("|");
-    for(var value in values) {
-      var newCase = clone(melaCase);
-      newCase[fieldId] = values[value];
-      cases.push(newCase);
-    }
-  })
-
-  var ds = new DataSource();
-  ds.fields = this.fields;
-  ds.data = cases;
-
-  return ds;
-}
-
-DataSource.prototype.groupBy = function(fieldId, fieldName, mappingFunc) {
-  var clusters = {};
-
-  this.data.forEach(function(melaCase) {
-    var value = melaCase[fieldId];
-    if (mappingFunc)
-      value = mappingFunc(value);
-    if (!clusters[value]) {
-      clusters[value] = new DataSource();
-    }
-    clusters[value].data.push(melaCase)
-  });
-
-  var result = [];
-  for(var value in clusters) {
-    var ds = clusters[value];
-    ds.name = value;
-    result.push(ds);
-  }
-
-  return result;
-}
-
-DataSource.prototype.countOptions = function(fieldId) {
-  var count = [];
-  var possibleValues = this.fields[fieldId].values;
-
-  if (fields[fieldId].type == "RANGE") {
-    for(var i=0; i<5; i++)
-      count.push(0);
-  }
-  else {
-    possibleValues.forEach(function(value, i) {
-      count.push(0);
-    });
-  }
-
-  data.forEach(function(melaCase) {
-    var answer = melaCase[fieldId]
-    if (fields[fieldId].type != "RANGE") {
-      answer = answer.split("|");
-      answer.forEach(function(a) {
-        count[possibleValues.indexOf(a)]++;
-      })
-    }
-    else {
-      count[answer]++;
-    }
-  });
-  if (fields[fieldId].type == "RANGE" && count.length > 5) {
-    count.pop();
-  }
-  return count;
-}
-
-
 </script>
 <script type="text/javascript">
 
@@ -415,17 +54,10 @@ window.onload = function() {
 
   var dataSource = new DataSource();
   dataSource.load("data/Field05.csv", function() {
-
-
-  console.log(dataSource.data.map(function(melaCase) { return melaCase[22]; }).join('|'));
-
     var questionIdList = [];
     for(var fieldName in Fields) {
       if (options.getValue(fieldName)) questionIdList.push(Fields[fieldName]);
     }
-    //
-    //var questionIdList = [23];
-
     //dataSource = dataSource.unrollData(Fields.FieldOfActivity);
     //var clusters = dataSource.groupBy(Fields.FieldOfActivity, "country");
     var clusters;
@@ -555,9 +187,9 @@ window.onload = function() {
           .attr("class", "smallLabel")
           .text(cluster.name.substr(0, 8));
       })
-      
+
     })
-    
+
     stats.attr("height", dy);
   });
 }
@@ -572,4 +204,4 @@ window.onload = function() {
 </body>
 </html>
 
-  
+
