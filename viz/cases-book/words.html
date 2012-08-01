@@ -1,0 +1,84 @@
+<html>
+<head>
+<title>MeLa Cases - words</title>
+<meta name = "viewport" content = "initial-scale = 1.0">
+<link rel="stylesheet" type="text/css" href="layout/style.css"/>
+<script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
+<script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
+<script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
+<script type="text/javascript" src="js/underscore.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/options.js"></script><!-- options at the top of the page -->
+<script type="text/javascript" src="js/common.js"></script><!-- options at the top of the page -->
+<script type="text/javascript" src="js/d3.layout.cloud.js"></script><!-- options at the top of the page -->
+<script type="text/javascript" src="js/constants.js"></script><!-- column ids and colors -->
+<script type="text/javascript" src="js/datasource.js"></script><!--data loading parsing and sorting -->
+<script type="text/javascript">
+
+window.onload = function() {
+  var pageWdth = 950;
+  
+  var wordClounds = [
+    { title : "Nouns", file : "data/nouns.json", minSize: 5, className : "nouns" },
+    { title : "Verbs", file : "data/verbs.json", minSize: 2, className : "verbs"  },
+    { title : "Adjectives", file : "data/adjectives.json", minSize: 1, className : "adjectives" }
+  ]
+  
+  var statsContainer = d3.select("#statsContainer")
+  
+  function loadWordCloud(info) {
+    console.log(info.file);
+    d3.text(info.file, function(wordList) {
+      statsContainer.append("h2").text(info.title);         
+      wordList = wordList.replace(/\"value\"\:/g, '"text":');
+      wordList = wordList.replace(/\"count\"\:/g, '"size":')      
+      wordList = JSON.parse(wordList);
+      wordList = wordList.filter(function(word) { return word.size > info.minSize; });
+      wordList = wordList.filter(function(word) { return word.text != "the"; });
+      wordList.forEach(function(word) { word.size +=10; });
+      
+      d3.layout.cloud().size([950, 400])
+            .words(wordList)
+            //.rotate(function() { return ~~(Math.random() * 2) * 90; })
+            .font("Marvel")
+            .rotate(function() { return 0 })
+            .fontSize(function(d) { return d.size; })
+            .on("end", render)
+            .start();   
+      
+      function render(wordList) {
+        var stats = d3.select("#statsContainer")
+         .append("svg")
+         .attr("width", pageWdth)
+         .attr("height", 450)
+         .attr("class", info.className);   
+         
+         stats.append("g")
+           .attr("transform", "translate(475,225)")
+               .selectAll("text")
+                 .data(wordList)
+                 .enter().append("text")
+                 .style("font-size", function(d) { return (d.size) + "px"; })
+                 .attr("text-anchor", "middle")
+                 .attr("transform", function(d) {
+                   return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                 })
+                 .text(function(d) { return d.text; });                   
+      }
+      
+    });    
+  }
+  
+  wordClounds.forEach(loadWordCloud);
+}
+</script>
+</head>
+<body>
+  <div id="page">
+    <div id="options"></div>
+    <h1>Text</h1>
+    <div id="statsContainer">
+      <br/>
+    </div>
+  </div>
+</body>
+</html>
