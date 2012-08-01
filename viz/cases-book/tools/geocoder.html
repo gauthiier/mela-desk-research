@@ -1,0 +1,48 @@
+<html>
+<head>
+<title>Geocoder</title>
+<script src="../js/jquery.js"></script>
+<script>
+
+function go() {
+  var data = JSON.parse($.trim($("#input").val()));
+  var counter = 0;
+
+
+  function loadNext() {
+    var city = data[counter].name;
+    $.get("http://api.geonames.org/searchJSON?q=" + city + "&username=ciid&maxRows=1", function(response) {
+      if (response.geonames && response.geonames[0] && response.geonames[0].lat) {
+        data[counter].lat = response.geonames[0].lat;
+        data[counter].lng = response.geonames[0].lng;
+      }
+      counter++;
+
+      if (counter == data.length) {
+        $("#result").val(JSON.stringify(data));
+        return;
+      }
+
+      $("#result").val(counter + " / " + data.length);
+      setTimeout(loadNext, 100);
+    }, "json")
+  }
+
+  loadNext();
+}
+
+</script>
+</head>
+<body>
+  <label>
+  <textarea rows="20" cols="50" id="input">
+    [{"name":"New York","count":21},{"name":"various","count":1},{"name":"London","count":14},{"name":"Denver","count":1},{"name":"Manchester","count":1},{"name":"Hobart","count":1},{"name":"Washington DC","count":4},{"name":"Rotterdam","count":1},{"name":"Indianapolis","count":2},{"name":"Auckland","count":1},{"name":"Boston","count":1},{"name":"Los Angeles","count":1},{"name":"Amsterdam","count":7},{"name":"North Adams","count":1},{"name":"Pisa","count":1},{"name":"San Jose","count":2},{"name":"Various","count":2},{"name":"Chicago","count":2},{"name":"Glasgow","count":1},{"name":"Leicester","count":1},{"name":"Undefined","count":1},{"name":"New Mexico","count":1},{"name":"Berlin","count":2},{"name":"York","count":1},{"name":"Lenzburg","count":1},{"name":"Utrecht","count":1},{"name":"Tennant Creek","count":1},{"name":"online","count":3},{"name":"Saskatchewan","count":1},{"name":"Naples","count":1},{"name":"Tongeren","count":1},{"name":"Santa Fe","count":1},{"name":"Treviso","count":2},{"name":"Sidney","count":1},{"name":"Lilyfield","count":1},{"name":"Aachen","count":1},{"name":"Tokyo","count":1},{"name":"Milan","count":2},{"name":"Arlington","count":1},{"name":"Oslo","count":1},{"name":"Newcastle upon Tyne","count":2},{"name":"Haarlem ","count":1},{"name":"Surrey","count":1},{"name":"Cambridge, MA","count":1},{"name":"Dublin","count":1},{"name":"Vienna","count":1},{"name":"Eindhoven","count":1},{"name":"Philadelphia","count":2},{"name":"Hilversum","count":1},{"name":"Galicia","count":1},{"name":"Washington, D.C.","count":1},{"name":"Sydney","count":1},{"name":"Melbourne","count":1},{"name":"Rome","count":2},{"name":"Major of San Giuliano Milanese","count":1},{"name":"Oakland","count":1},{"name":"Torino","count":1},{"name":" Newcastle Upon Tyne","count":1},{"name":"Aarhus","count":3},{"name":"Shanghai","count":1},{"name":"Edinburgh","count":1},{"name":"Mountain View","count":1},{"name":"Doha","count":1},{"name":"Detroit","count":1},{"name":"Paris","count":1},{"name":"Roma","count":1},{"name":"Koln","count":1}]
+  </textarea>
+  </label>
+  <label>
+    Results
+  <textarea rows="20" cols="50" id="result">
+  </textarea>
+  </label>
+  <input type="button" value="go" onclick="go()"/>
+</body>

@@ -1,0 +1,118 @@
+<html>
+<head>
+<title>MeLa Cases - cities</title>
+<link rel="stylesheet" type="text/css" href="layout/style.css"/>
+<script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
+<script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
+<script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
+<script type="text/javascript" src="js/underscore.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/options.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/constants.js"></script><!-- column ids and colors -->
+<script type="text/javascript" src="js/datasource.js"></script><!--data loading parsing and sorting -->
+<script type="text/javascript">
+</script>
+<script type="text/javascript">
+
+var pageWidth = 950;
+var pageHeight = 650;
+var features = [];
+var map;
+
+function loadMap() {
+  var xy = d3.geo.mercator();
+  map = d3.geo.path().projection(xy);
+
+  //scale the map a bit bigger than the div, we don't need Greenland and Antarctic
+  xy.scale(950);
+  var translate = xy.translate();
+  translate[0] = (950) * 0.5;
+  translate[1] = 650 * 0.6 + 20;
+  //xy.translate(translate);
+
+  countryMap = d3.select("#statsContainer")
+    .append("svg:svg")
+    .attr("width", pageWidth)
+    .attr("height", pageHeight)
+    .append("svg:g")
+      .attr("id", "stats");
+
+
+
+  d3.json("data/world-countries-iso.json", function(collection) {
+    features = collection.features;
+
+    countryMap
+      .selectAll("path")
+        .data(collection.features)
+      .enter().append("svg:path")
+        .attr("d", map)
+        .attr("fill", "rgb(255, 255, 255)")
+        .attr("id", function(d) { return "iso_" + d.iso; })
+        .attr("class", "country")
+      .append("svg:title")
+        .text(function(d) { return d.properties.name; });
+
+      loadData();
+  });
+}
+
+function findCountryCenter(iso) {
+  for(var i=0; i<features.length; i++) {
+    if (features[i].iso == iso) {
+      var c = map.centroid(features[i]);
+      return { x : c[0], y : c[1] };
+    }
+  }
+}
+
+function loadData() {
+  var options = new Options();
+  //options.add("normalize", "Normalize Per Cluster", false);
+
+  findCountryCenter("US")
+
+  var dataSource = new DataSource();
+  dataSource.load("data/Field05.csv", function() {
+    var stats = d3.select("#stats")
+
+    var c = JSON.stringify(dataSource.groupBy(Fields.City, "city").map(function(city) {
+      return { name: city.name, count : city.data.length}
+    }));
+
+    console.log(c);
+
+
+    var clusters = dataSource.groupBy(Fields.Country, "country");
+    clusters.forEach(function(cluster) {
+      var iso = dataSource.countryNameToIso(cluster.name)
+      var center = findCountryCenter(iso);
+
+      var circle = stats.append("circle")
+      .attr("cx", center.x)
+      .attr("cy", function() { if (center.x < pageWidth/2) return center.y + 50; else return center.y })
+      .attr("r", function() { return 5 + 1 * cluster.data.length; })
+      .attr("fill", "rgba(255, 255, 0, 0.75)")
+
+      d3.select("#iso_" + iso)
+        .attr("fill", Colors.SkyBlue);
+    })
+
+  });
+
+}
+
+window.onload = function() {
+  loadMap();
+}
+
+</script>
+<body>
+  <div id="page">
+    <div id="options"></div>
+    <h1>Geo categories</h1>
+    <div id="statsContainer"></div>
+  </div>
+</body>
+</html>
+
+
