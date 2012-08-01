@@ -1,0 +1,68 @@
+@font-face { font-family: Abel; src: url('fonts/Abel/Abel-Regular.ttf'); }
+@font-face { font-family: Marvel; font-weight: bold; src: url('fonts/Marvel/Marvel-Bold.ttf'); }
+
+/*
+Size 140mm x 205mm
+
+650 x 950
+*/
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Marvel, sans-serif;
+  margin: 1em;
+  background: #edebdd /*creamy*/;
+}
+
+p {
+  font-family: Abel, sans-serif;
+}
+
+h1 {
+  background: #FFF;
+  padding: 0.25em 0.5em;
+  border-bottom: 0.25em solid #55c1dc;
+  margin-bottom: 1px;
+}
+
+#page {
+  width: 950px;
+  margin:0 auto;
+}
+
+#options {
+  margin-bottom: 0.5em;
+  overflow: auto;
+}
+
+#options label {
+  font-size: 85%;
+  margin-right: 1em;
+  margin-bottom: 0.5em;
+  float: left;
+}
+
+#options label input {
+  margin-right: 1em;
+  xmargin-left: 2em;
+}
+
+#options label:first-child input {
+  margin-left: 0;
+}
+
+
+#options hr {
+  margin: 0.5em 0;
+  clear: both;
+}
+
+text.smallLabel {
+  font-size: 60%;
+  text-transform: uppercase;
+  font-family: Abel ;
+}
