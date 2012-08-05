@@ -1,0 +1,138 @@
+<html>
+<head>
+<title>MeLa Cases - mega</title>
+<link rel="stylesheet" type="text/css" href="layout/style.css"/>
+<script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
+<script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
+<script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
+<script type="text/javascript" src="js/underscore.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/options.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/constants.js"></script><!-- column ids and colors -->
+<script type="text/javascript" src="js/datasource.js"></script><!--data loading parsing and sorting -->
+<script type="text/javascript">
+</script>
+<script type="text/javascript">
+
+var pageWidth = 950;
+var pageHeight = 4 * 950 * 950/650;
+
+window.onload = function() {
+  var options = new Options();
+  var dataSource = new DataSource();
+  console.time("load");
+  dataSource.load("data/Field05.csv", function() {
+    console.timeEnd("load");
+    var stats = d3.select("#statsContainer")
+      .append("svg")
+      .attr("width", pageWidth)
+      .attr("height", pageHeight)
+      .attr("id", "stats");
+        
+    var numQuestions = dataSource.fields.length;
+    var widthPerCase = pageWidth / dataSource.data.length;
+    var heightPerQuestions = pageHeight / numQuestions;
+    
+    var selectedCase = 0;
+    
+    console.time("bla");
+    var possibleValues = d3.range(numQuestions).map(function(i) {
+      return dataSource.findAllPossibleValues(i);
+    })
+    console.timeEnd("bla");        
+    console.time("draw");
+    
+    var line = d3.svg.line()
+      .x(function(d) { return Math.floor(d[0]) + 0.5; })
+      .y(function(d) { return d[1]; })
+      .interpolate("basis")
+      
+    dataSource.fields.forEach(function(field, i) {
+      if (!field) return;
+      stats.append("text")
+        .attr("fill", "#000000")
+        .attr("x", pageWidth * 0.75 + 5)
+        .attr("y", i * heightPerQuestions + 5)
+        .attr("class", "smallLabel")
+        .text(field.name);      
+    });
+      
+    function drawLines(caseId, prevQuestion, prevAnswers, question, answers) {
+      var start = [5 + prevAnswers[0] * (pageWidth*0.75 - 10), prevQuestion * heightPerQuestions];
+      var end = [5 + answers[0] * (pageWidth*0.75 - 10), question * heightPerQuestions];
+      var points = [
+        start, 
+        [start[0], start[1] + (end[1] - start[1]) * 0.33],
+        [end[0], start[1] + (end[1] - start[1]) * 0.66],
+        end
+      ];
+      
+      var lineColor = (caseId == selectedCase) ? "#55c1dc" : "#000"
+      var lineWidth = (caseId == selectedCase) ? 2 : 0.5;
+      
+      var path = stats
+        .append("path")
+        .data([points])
+        .attr("d", line)
+        .attr("stroke", lineColor)
+        .attr("fill", "none")
+        .attr("stroke-width", lineWidth)      
+    }
+    
+    function plotCase(melaCase, i) {      
+      var prevAnswers = [];   
+      var prevQuestion = -1;   
+      for(var j=0; j<numQuestions; j++) {
+        if (possibleValues[j].length == 1) continue;
+        var answer = melaCase[j] ? melaCase[j] : "";
+        var answers = answer.split("|").map(function(a) { return possibleValues[j].indexOf(a) / possibleValues[j].length; });
+        if (j > 0) {
+          drawLines(i, prevQuestion, prevAnswers, j, answers);
+        }
+        if (i == selectedCase) {
+          var tx = 10 + answers[0] * (pageWidth*0.75 - 10);
+          var ty = j * heightPerQuestions - 10;
+          if (j == 0) ty += 20;
+          var g = stats.append("g")
+          var text = g.append("text")
+            .attr("fill", "#FFF")
+            .attr("x", tx + 5)
+            .attr("y", ty + 12)
+            .attr("class", "smallLabel")
+            .text(answer.split("|")[0]);
+          
+            g.append("rect")
+              .attr("fill", "#55c1dc")
+              .attr("x", tx)
+              .attr("y", ty)
+              .attr("width", text[0][0].getBBox().width + 10)
+              .attr("height", 16)
+              
+              g[0][0].appendChild(text[0][0]);
+          
+        }
+        prevAnswers = answers;
+        prevQuestion = j;
+      }     
+    }
+    
+    dataSource.data.forEach(plotCase)
+    plotCase(dataSource.data[selectedCase], selectedCase);
+    console.timeEnd("draw");
+    
+    //var numCases = dataSource.data.length
+    
+    stats.selectAll()
+  });
+}
+
+</script>
+<body>
+  <div id="page">
+    <div id="options"></div>
+    <h1>Mega</h1>
+    <div id="statsContainer"></div>
+  </div>
+</body>
+</html>
+
+
