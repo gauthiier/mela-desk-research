@@ -41,14 +41,17 @@ DataSource.prototype.load = function(file, callback) {
         if (verbose) console.log(i, fieldNames[i], fieldTypes[i])
       }
       else {
-        fields[i] = null;
+        fields[i] = {
+          name : fieldNames[i],
+          type : null
+        }
       }
     }
     data.splice(0, 4); //remove metadata
-    
+
     self.data = data;
     self.fields = fields;
-    
+
     if (self.isoCountries.length > 0) callback();
     else self.onLoadCallback = callback; //wait for iso countries to finish loading
   });

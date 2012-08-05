@@ -45,6 +45,7 @@ window.onload = function() {
   options.add("clusterByYear", "Cluster By Year", false, "CLUSTER");
   options.add("clusterByCountry", "Cluster By Country", false, "CLUSTER");
   options.add("clusterByField", "Cluster By Field of Activity", false, "CLUSTER");
+  options.add("clusterByTopic", "Cluster By Topic", false, "CLUSTER");
   options.addBreak();
 
   for(var fieldName in Fields) {
@@ -67,7 +68,13 @@ window.onload = function() {
       clusters.sort(function(a, b) { return -(a.data.length - b.data.length)}); //sort descending by num of cases
     }
     else if (options.getValue("clusterByField")) {
+      dataSource = dataSource.unrollData(Fields.FieldOfActivity);
       clusters = dataSource.groupBy(Fields.FieldOfActivity, "field");
+      clusters = clusters.filter(function(cluster) { return cluster.data.length > 1; });
+      clusters.sort(function(a, b) { return -(a.data.length - b.data.length)});  //sort descending by num of cases
+    }
+    else if (options.getValue("clusterByTopic")) {
+      clusters = dataSource.groupBy(Fields.Topic, "topic");
       clusters = clusters.filter(function(cluster) { return cluster.data.length > 1; });
       clusters.sort(function(a, b) { return -(a.data.length - b.data.length)});  //sort descending by num of cases
     }
@@ -152,6 +159,14 @@ window.onload = function() {
       clusters.forEach(function(cluster, clusterIndex) {
         var clusterAnswers = cluster.findAndCountAllPossibleValues(questionId);
 
+        stats.append("text")
+          .attr("fill", "#000000")
+          .attr("x", dx + widthPerCluster * clusterIndex)
+          .attr("y", dy + topAnswers.length * 11 + 25)
+          .attr("class", "smallLabel")
+          .text(cluster.data.length);
+
+
         clusterAnswers = topAnswers.map(function(answer, i) {
           var answerIndex = findAnswerIndex(clusterAnswers, answer.value);
           return {
@@ -160,8 +175,11 @@ window.onload = function() {
           }
         })
 
+        var localMax = cluster.findAndCountAllPossibleValuesMax(questionId);
+
         clusterAnswers.forEach(function(answer, answerIndex) {
-          var value = answer.count / globalMax;
+          //var value = answer.count / globalMax;
+          var value = answer.count / localMax;
 
           if (options.getValue("normalize"))
             value = answer.count / cluster.data.length;

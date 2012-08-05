@@ -45,4 +45,12 @@ var Colors = {
   SkyBlue : chroma.hex('#55c1dc'),
   TomatoRed : chroma.hex('#eb6909'),
   Cyan : chroma.hex('#00EDBA')
+
+  //Field 01 - dark green - #46a12a
+  //Field 02 - light green - #8ebc11
+  //Field 03 - yellow - #fed61e
+  //Field 04 - orange - #f39404
+  //Field 05 - tomato - #eb6909
+  //Field 06 - red - #e3001b
+
 }
