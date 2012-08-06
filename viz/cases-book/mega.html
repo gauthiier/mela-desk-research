@@ -7,6 +7,8 @@
 <script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
 <script type="text/javascript" src="js/underscore.js"></script><!-- functional programming utils -->
 <script type="text/javascript" src="js/options.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/jquery.js"></script><!-- for ajax -->
+<script type="text/javascript" src="js/base64.js"></script><!-- for ajax -->
 <script type="text/javascript" src="js/constants.js"></script><!-- column ids and colors -->
 <script type="text/javascript" src="js/datasource.js"></script><!--data loading parsing and sorting -->
 <script type="text/javascript">
@@ -27,108 +29,222 @@ window.onload = function() {
       .attr("width", pageWidth)
       .attr("height", pageHeight)
       .attr("id", "stats");
-        
+
     var numQuestions = dataSource.fields.length;
     var widthPerCase = pageWidth / dataSource.data.length;
     var heightPerQuestions = pageHeight / numQuestions;
-    
+
     var selectedCase = 0;
-    
+
     console.time("bla");
     var possibleValues = d3.range(numQuestions).map(function(i) {
       return dataSource.findAllPossibleValues(i);
     })
-    console.timeEnd("bla");        
+    console.timeEnd("bla");
     console.time("draw");
-    
+
     var line = d3.svg.line()
       .x(function(d) { return Math.floor(d[0]) + 0.5; })
       .y(function(d) { return d[1]; })
       .interpolate("basis")
-      
-    dataSource.fields.forEach(function(field, i) {
-      if (!field) return;
-      stats.append("text")
-        .attr("fill", "#000000")
-        .attr("x", pageWidth * 0.75 + 5)
-        .attr("y", i * heightPerQuestions + 5)
-        .attr("class", "smallLabel")
-        .text(field.name);      
+
+    var skipFields = [
+      Fields.ID, Fields.TimeStamp, Fields.InterestedPartner,
+      Fields.Name, Fields.Year, Fields.NameContactOfCuratorOrganiser,
+      Fields.TargetGroup, Fields.Representation,
+      Fields.ConceptionOfCulturalRepresentations,
+      Fields.Contemporaneousness, Fields.Provocativeness,
+      Fields.Stance
+    ];
+
+    function shouldSkipField(questionIndex) {
+      if (possibleValues[questionIndex].length == 1) return true;
+      if (!dataSource.fields[questionIndex]) return true;
+      if (dataSource.fields[questionIndex].type == "TEXTAREA") return true;
+      if (skipFields.indexOf(questionIndex) !== -1) return true;
+
+      return false;
+    }
+
+    //data collection
+
+    var answersPerQuestion = [];
+
+    function addAnswer(melaCaseIndex, questionIndex, answer) {
+      if (!answersPerQuestion[questionIndex]) answersPerQuestion[questionIndex] = {};
+      if (!answersPerQuestion[questionIndex][answer]) answersPerQuestion[questionIndex][answer] = [];
+      answersPerQuestion[questionIndex][answer].push(melaCaseIndex);
+    }
+
+    dataSource.data.forEach(function(melaCase, melaCaseIndex) {
+      for(var questionIndex=0; questionIndex<numQuestions; questionIndex++) {
+        if (shouldSkipField(questionIndex)) continue;
+
+        var answerStr = melaCase[questionIndex] || "";
+        var answers = answerStr.split("|").map(function(a) { return possibleValues[questionIndex].indexOf(a) / possibleValues[questionIndex].length; });
+        answers = [answers[0]];//limit to only first answer
+
+        answers.forEach(function(answer) {
+          addAnswer(melaCaseIndex, questionIndex, answer);
+        });
+      }
     });
-      
-    function drawLines(caseId, prevQuestion, prevAnswers, question, answers) {
-      var start = [5 + prevAnswers[0] * (pageWidth*0.75 - 10), prevQuestion * heightPerQuestions];
-      var end = [5 + answers[0] * (pageWidth*0.75 - 10), question * heightPerQuestions];
+
+    function findFirstAnswerPosition(melaCaseIndex, questionIndex) {
+      var answers = answersPerQuestion[questionIndex];
+      var numAnswers = 0;
+
+      for(var answerValue in answers) { numAnswers++; }
+
+
+      for(var answerValue in answers) {
+        var casesWithAnswer = answers[answerValue];
+        var caseAnswerIndex = casesWithAnswer.indexOf(melaCaseIndex);
+        if (caseAnswerIndex != -1) {
+
+          var spacing = (pageWidth*0.75 - 10 - dataSource.data.length) / (numAnswers);
+          var answerX = 5 + spacing/2;
+
+          for(answerValue2 in answers) {
+            if (answerValue2 == answerValue) break;
+            answerX += spacing;
+            answerX += answers[answerValue2].length;
+          }
+
+          return Math.floor(answerX + caseAnswerIndex) + 0.5;
+        }
+      }
+      return 0;
+      }
+
+    //drawing
+
+    function answerToString(melaCase, questionIndex) {
+      var answer = melaCase[questionIndex].split("|")[0];
+      if (!answer) answer = "N/A";
+      if (answer.length > 50) answer = answer.substr(0, 50) + "...";
+
+      if (dataSource.fields[questionIndex].type == "RANGE") {
+        var low = dataSource.fields[questionIndex].values[2];
+        var hi = dataSource.fields[questionIndex].values[3];
+        var n = Number(answer);
+        if (n <= 2) answer = low
+        else answer = hi;
+      }
+      return answer;
+    }
+
+    function drawLine(caseId, px, x, shiftY) {
+      var start = [px, Math.floor(shiftY - heightPerQuestions)];
+      var end = [x, Math.floor(shiftY)];
+
       var points = [
-        start, 
-        [start[0], start[1] + (end[1] - start[1]) * 0.33],
-        [end[0], start[1] + (end[1] - start[1]) * 0.66],
+        start,
+        [start[0], start[1] + (end[1] - start[1]) * 0.3],
+        [end[0], start[1] + (end[1] - start[1]) * 0.7],
         end
       ];
-      
-      var lineColor = (caseId == selectedCase) ? "#55c1dc" : "#000"
-      var lineWidth = (caseId == selectedCase) ? 2 : 0.5;
-      
+
+      var lineColor = (caseId == selectedCase) ? "#55c1dc" : "#492614";
+
+      var lineWidth = (caseId == selectedCase) ? 2 : 0.25;
+
       var path = stats
         .append("path")
         .data([points])
         .attr("d", line)
         .attr("stroke", lineColor)
         .attr("fill", "none")
-        .attr("stroke-width", lineWidth)      
+        .attr("stroke-width", lineWidth)
     }
-    
-    function plotCase(melaCase, i) {      
-      var prevAnswers = [];   
-      var prevQuestion = -1;   
-      for(var j=0; j<numQuestions; j++) {
-        if (possibleValues[j].length == 1) continue;
-        var answer = melaCase[j] ? melaCase[j] : "";
-        var answers = answer.split("|").map(function(a) { return possibleValues[j].indexOf(a) / possibleValues[j].length; });
-        if (j > 0) {
-          drawLines(i, prevQuestion, prevAnswers, j, answers);
+
+    var fieldLabels = [];
+
+    var shiftY;
+    function plotCase(melaCase, melaCaseIndex) {
+      shiftY = 0;
+      var prevQuestionIndex = -1;
+      for(var questionIndex=0; questionIndex<numQuestions; questionIndex++) {
+        if (shouldSkipField(questionIndex)) continue;
+
+        var x = 5;
+        var px = 0;
+        if (prevQuestionIndex != -1) {
+          px = findFirstAnswerPosition(melaCaseIndex, prevQuestionIndex);
+          x = findFirstAnswerPosition(melaCaseIndex, questionIndex);
+          drawLine(melaCaseIndex, px, x, shiftY);
         }
-        if (i == selectedCase) {
-          var tx = 10 + answers[0] * (pageWidth*0.75 - 10);
-          var ty = j * heightPerQuestions - 10;
-          if (j == 0) ty += 20;
+
+        prevQuestionIndex = questionIndex;
+
+        if (!fieldLabels[questionIndex]) {
+          fieldLabels[questionIndex] = stats.append("text")
+            .attr("fill", "#000000")
+            .attr("x", pageWidth * 0.75 + 5)
+            .attr("y", shiftY + 5 + ((shiftY == 0) ? 10 : 0))
+            .attr("class", "smallLabel")
+            .text(dataSource.fields[questionIndex].name);
+        }
+
+        if (melaCaseIndex == selectedCase) {
+          var tx = x + 10;
+          var ty = shiftY - 10;
+          if (shiftY == 0) ty += 20;
+          if (questionIndex == 0) ty += 20;
           var g = stats.append("g")
           var text = g.append("text")
             .attr("fill", "#FFF")
             .attr("x", tx + 5)
             .attr("y", ty + 12)
             .attr("class", "smallLabel")
-            .text(answer.split("|")[0]);
-          
+            .text(answerToString(melaCase, questionIndex));
+
             g.append("rect")
               .attr("fill", "#55c1dc")
               .attr("x", tx)
               .attr("y", ty)
               .attr("width", text[0][0].getBBox().width + 10)
               .attr("height", 16)
-              
+
               g[0][0].appendChild(text[0][0]);
-          
         }
-        prevAnswers = answers;
-        prevQuestion = j;
-      }     
+
+        shiftY += heightPerQuestions;
+      }
     }
-    
-    dataSource.data.forEach(plotCase)
+
+    dataSource.data.forEach(plotCase);
     plotCase(dataSource.data[selectedCase], selectedCase);
-    console.timeEnd("draw");
-    
-    //var numCases = dataSource.data.length
-    
-    stats.selectAll()
+
+    stats.attr("height", shiftY)
+
+    stats.selectAll();
+  });
+}
+
+function downloadSVG() {
+  $.get('layout/style.css', function(css) {
+    var svgContainer = document.getElementById("statsContainer");
+    $("#stats").attr({ version: '1.1' , xmlns:"http://www.w3.org/2000/svg"});
+    var svg = document.getElementById("stats");
+
+    var svgDoc = svg.ownerDocument;
+    var styleElement = svgDoc.createElementNS("http://www.w3.org/2000/svg", "style");
+    styleElement.textContent = css;
+    svg.appendChild(styleElement);
+    var svgStr = '';
+    svgStr = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    svgStr += svgContainer.innerHTML;
+    var win = window.open("data:image/svg+xml;base64," + Base64.encode(svgStr), "_blank");
   });
 }
 
 </script>
 <body>
   <div id="page">
-    <div id="options"></div>
+    <div id="options">
+      <a href="javascript:downloadSVG()">Download SVG</a>
+    </div>
     <h1>Mega</h1>
     <div id="statsContainer"></div>
   </div>

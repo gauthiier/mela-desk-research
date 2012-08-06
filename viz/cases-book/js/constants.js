@@ -1,4 +1,6 @@
 var Fields = {
+  ID : 0,
+  TimeStamp : 2,
   NameOfTheInstitution : 4, //TEXTFIELD
   Country : 5, //COUNTRYLIST
   City : 6, //TEXTFIELD
@@ -12,7 +14,7 @@ var Fields = {
   LinksForPartnersOnly : 14, //TEXTAREA
   Name : 16, //TEXTFIELD
   Topic : 17, //RADIO
-  Year : 18, //TEXTFIELD
+  Year2 : 18, //TEXTFIELD
   NameContactOfCuratorOrganiser : 19, //TEXTFIELD
   Links : 20, //TEXTAREA
   Description : 22, //TEXTAREA
