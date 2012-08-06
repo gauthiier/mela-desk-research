@@ -12,7 +12,7 @@ Size 140mm x 205mm
   padding: 0;
 }
 
-body {
+body, svg {
   font-family: Marvel, sans-serif;
   margin: 1em;
   background: #edebdd /*creamy*/;
@@ -65,4 +65,8 @@ text.smallLabel {
   font-size: 60%;
   text-transform: uppercase;
   font-family: Abel ;
+}
+
+svg {
+  background: #edebdd;
 }

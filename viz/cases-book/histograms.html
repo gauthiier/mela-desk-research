@@ -49,7 +49,10 @@ window.onload = function() {
   options.addBreak();
 
   for(var fieldName in Fields) {
-    var fieldLabel = fieldName.match(/[A-Z][a-z]+/g).join(" ");
+    if (!fieldName) continue;
+    var fieldLabel = fieldName.match(/[A-Z][a-z]+/g);
+    fieldLabel = fieldLabel || [];
+    fieldLabel = fieldLabel.join(" ");
     options.add(fieldName, fieldLabel, false);
   }
 
@@ -178,8 +181,8 @@ window.onload = function() {
         var localMax = cluster.findAndCountAllPossibleValuesMax(questionId);
 
         clusterAnswers.forEach(function(answer, answerIndex) {
-          //var value = answer.count / globalMax;
-          var value = answer.count / localMax;
+          var value = answer.count / globalMax;
+          //var value = answer.count / localMax;
 
           if (options.getValue("normalize"))
             value = answer.count / cluster.data.length;
