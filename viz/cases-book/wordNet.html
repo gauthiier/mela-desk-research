@@ -1,0 +1,237 @@
+<html>
+<head>
+<title>MeLa Cases - words</title>
+<meta name = "viewport" content = "initial-scale = 1.0">
+<link rel="stylesheet" type="text/css" href="layout/style.css"/>
+<script type="text/javascript" src="js/d3/d3.v2.min.js"></script><!-- visualization library -->
+<script type="text/javascript" src="js/csv.js"></script><!-- comma separated values file parsing function -->
+<script type="text/javascript" src="js/chroma.js"></script><!-- color manipulation library -->
+<script type="text/javascript" src="js/underscore.js"></script><!-- functional programming utils -->
+<script type="text/javascript" src="js/options.js"></script><!-- options at the top of the page -->
+<script type="text/javascript" src="js/common.js"></script><!-- options at the top of the page -->
+<script type="text/javascript" src="js/d3.layout.cloud.js"></script><!-- options at the top of the page -->
+<script type="text/javascript" src="js/constants.js"></script><!-- column ids and colors -->
+<script type="text/javascript" src="js/datasource.js"></script><!--data loading parsing and sorting -->
+<style type="text/css">
+.nouns { fill: #55c1dc;}
+.verbs { fill: #eb6909;}
+.adjectives { fill: #46a12a;}
+</style>
+<script type="text/javascript">
+
+window.onload = function() {
+  var pageWdth = 768;
+  var pageHeight = 1024;
+
+  var wordClounds = [
+    { title : "Nouns", file : "data/nouns.json", minSize: 5, className : "nouns" },
+    { title : "Verbs", file : "data/verbs.json", minSize: 2, className : "verbs"  },
+    { title : "Adjectives", file : "data/adjectives.json", minSize: 1, className : "adjectives" }
+  ]
+
+  var wordList = {};
+  var loadedLists = 0;
+
+  var stats = d3.select("#statsContainer")
+              .append("svg")
+              .attr("width", pageWdth)
+              .attr("height", pageHeight)
+              .attr("id", "stats");
+
+
+  var bannedWords = ["this", "they", "each", "these"];
+
+  function loadWordCloud(info) {
+    d3.text(info.file, function(wordsStr) {
+      var words = JSON.parse(wordsStr);
+      words = words.filter(function(word) { return word.count > 5 });
+      words = words.filter(function(word) { return word.value.length > 3 });
+      words = words.filter(function(word) { return bannedWords.indexOf(word.value) == -1 });
+
+      var wordsHash = {};
+      words.forEach(function(word) {
+        var lowerCaseWord = word.value.toLowerCase();
+        if (!wordsHash[lowerCaseWord]) wordsHash[lowerCaseWord] = 0;
+        wordsHash[lowerCaseWord] += word.count;
+      })
+      wordList[info.className] = {
+        hash: wordsHash,
+        words : words
+      };
+      console.log("loadedLists ", loadedLists + 1);
+      if (++loadedLists == 3) {
+        processCasesDescriptions();
+      }
+    });
+  }
+
+  var dataSource = new DataSource();
+  dataSource.load("data/Field05.csv", function() {
+    wordClounds.forEach(loadWordCloud);
+  });
+
+  function isNoun(word) { return wordList.nouns.hash[word]; }
+  function isAdjective(word) { return wordList.adjectives.hash[word]; }
+
+  function objToArray(o) {
+    var result = [];
+    for(var i in o) {
+      result.push(o[i]);
+    }
+    return result;
+  }
+
+  function byCountDesc(a, b) {
+    return b.count - a.count;
+  }
+
+  var foundNouns = {};
+
+  function addNounAdjectives(foundNouns, noun, nouns, adjectives) {
+    if (!foundNouns[noun]) {
+      foundNouns[noun] = { name : noun, count : 0, neighborNouns : [], neighborAdjectives : [] };
+    }
+    foundNouns[noun].count++;
+
+    addNeighborWords(foundNouns[noun].neighborNouns, nouns.filter(function(n) { return n != noun; }));
+    addNeighborWords(foundNouns[noun].neighborAdjectives, adjectives);
+    return foundNouns[noun];
+  }
+
+  function addNeighborWords(list, words) {
+    words.forEach(function(word) {
+      if (!list[word]) list[word] = { name : word, count : 0 };
+      list[word].count++;
+    })
+  }
+
+  function processCasesDescriptions() {
+    console.log("processDescriptions");
+
+    dataSource.data.forEach(function(melaCase, melaCaseIndex) {
+      var sentences = melaCase[Fields.Description].split(/[\.\;]/);
+      sentences.forEach(function(sentence) {
+        var words = sentence.split(/[^a-zA-Z]/).map(function(w) { return w.toLowerCase(); });
+        var nouns = words.filter(isNoun);
+        var adjectives = words.filter(isAdjective);
+        nouns.forEach(function(noun) {
+          addNounAdjectives(foundNouns, noun, nouns, adjectives);
+        });
+      })
+    })
+
+    foundNouns = objToArray(foundNouns);
+    foundNouns.sort(byCountDesc);
+
+    foundNouns.forEach(function(foundNoun) {
+      foundNoun.neighborNouns = objToArray(foundNoun.neighborNouns);
+      foundNoun.neighborNouns.sort(byCountDesc);
+
+      foundNoun.neighborAdjectives = objToArray(foundNoun.neighborAdjectives);
+      foundNoun.neighborAdjectives.sort(byCountDesc);
+    })
+
+    buildGraph();
+  }
+
+  function buildGraph() {
+    var bestNouns = foundNouns.filter(function(noun) { return noun.count > 20});
+
+    console.log("Building graph for the " + bestNouns.length + " best nouns");
+    console.log(bestNouns);
+
+    function findNounInTheBestNouns(nounName) {
+      for(var i=0; i<bestNouns.length; i++) {
+        if (bestNouns[i].name == nounName) return bestNouns[i];
+      }
+      return null;
+    }
+
+    var links = [];
+
+    bestNouns.forEach(function(foundNoun) {
+      foundNoun.neighborNouns.forEach(function(neighborNoun) {
+        var noun = findNounInTheBestNouns(neighborNoun.name);
+        if (noun) {
+          var linkExist = false;
+          links.slice(0,1).forEach(function(link) {
+            if (link.source == foundNoun && link.target == noun) linkExist = true;
+            if (link.source == noun && link.target == foundNoun) linkExist = true;
+          })
+          if (!linkExist)
+            links.push({ source : foundNoun, target : noun });
+        }
+      })
+    })
+
+    var force = d3.layout.force()
+        .nodes(bestNouns)
+        .links(links)
+        .linkDistance(300)
+        .size([pageWdth, pageHeight])
+        .start();
+
+    var link = stats.selectAll("line")
+      .data(links)
+      .enter().append("line")
+      .attr("stroke", "rgba(255, 0, 0, 0.125)")
+
+
+    var node = stats.selectAll("circle")
+       .data(bestNouns)
+       .enter().append("circle")
+       .attr("r", 5);
+
+    var text = stats.selectAll("text")
+      .data(bestNouns)
+      .enter().append("text")
+      .text(function(d) { return d.name + " - " + d.count; });
+
+
+    force.on("tick", function() {
+      link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+      node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+
+      text.attr("x", function(d) { return d.x + 10; })
+        .attr("y", function(d) { return d.y; });
+
+    });
+  }
+
+}
+
+function downloadSVG() {
+  $.get('layout/style.css', function(css) {
+    var svgContainer = document.getElementById("statsContainer");
+    $("#stats").attr({ version: '1.1' , xmlns:"http://www.w3.org/2000/svg"});
+    var svg = document.getElementById("stats");
+
+    var svgDoc = svg.ownerDocument;
+    var styleElement = svgDoc.createElementNS("http://www.w3.org/2000/svg", "style");
+    styleElement.textContent = css;
+    svg.appendChild(styleElement);
+    var svgStr = '';
+    svgStr = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    svgStr += svgContainer.innerHTML;
+    var win = window.open("data:image/svg+xml;base64," + Base64.encode(svgStr), "_blank");
+  });
+}
+
+</script>
+</head>
+<body>
+  <div id="page">
+    <div id="options">
+      <a href="javascript:downloadSVG()">Download SVG</a>
+    </div>
+    <h1>Word Net</h1>
+    <div id="statsContainer">
+    </div>
+  </div>
+</body>
+</html>
